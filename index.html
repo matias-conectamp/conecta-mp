@@ -18,6 +18,7 @@
         
         h2 { text-align: center; color: var(--primary-dark); margin-bottom: 20px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
         
+        /* Navegación Principal */
         .tabs { display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; font-size: 14px; transition: all 0.2s ease; }
         .tab-btn.active { background: white; color: var(--primary-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -28,7 +29,7 @@
         label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 6px; }
         select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 14px; font-size: 15px; background-color: #f8fafc; color: var(--primary-dark); }
         
-        /* El Nuevo Mapa GPS Protagonista */
+        /* El Mapa GPS Protagonista */
         .map-container { position: relative; height: 240px; background: #0f172a; border-radius: 14px; margin: 16px 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; border: 2px solid var(--blue-accent); box-shadow: inset 0 0 20px rgba(0,0,0,0.6); }
         .map-container::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; }
         .map-content { z-index: 2; text-align: center; width: 100%; padding: 20px; }
@@ -44,9 +45,18 @@
         .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 24px; font-weight: bold; color: var(--primary-dark); cursor: pointer; background: white; }
         .count-display { font-size: 42px; font-weight: 800; color: var(--primary-dark); }
         
-        table { width: 100%; border-collapse: collapse; font-size: 13px; background: #f8fafc; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background: var(--primary-dark); color: white; font-weight: 600; }
+        /* Tablas y Sub-pestanas de Horarios */
+        .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+        .sub-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; color: #64748b; }
+        .sub-btn.active { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+        
+        .table-container { display: none; max-height: 380px; overflow-y: auto; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .table-container.active { display: block; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: var(--primary-dark); color: white; font-weight: 600; position: sticky; top: 0; }
+        .tag-route { display: inline-block; padding: 2px 6px; background: #e0f2fe; color: #0369a1; border-radius: 4px; font-size: 11px; font-weight: bold; }
         
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
@@ -66,13 +76,14 @@
         <button class="tab-btn" onclick="switchTab('horarios')">🕒 Buses</button>
     </div>
 
+    <!-- PANEL PASAJEROS -->
     <div id="panel-pasajeros" class="panel active">
         <label>Selecciona tu transporte:</label>
         <select id="select-servicio">
-            <option>Liebre - Recorrido 1 (María Pinto Centro)</option>
-            <option>Liebre - Recorrido 2 (Ibacache / Chorombo)</option>
-            <option>Colectivos Línea A (Bollenar - Melipilla)</option>
-            <option>Colectivos Línea B (Local María Pinto)</option>
+            <option>Línea 1 Colectivos (Lolenco - María Pinto)</option>
+            <option>Línea 2 Colectivos (Los Rulos - Melipilla)</option>
+            <option>Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
+            <option>Liebre (Los Rulos - Melipilla)</option>
         </select>
         
         <label style="display:flex; align-items:center; gap:10px; margin-bottom:14px; font-weight:500; cursor:pointer;">
@@ -93,6 +104,7 @@
         <button class="btn btn-blue" onclick="enviarAlertaPasajero()">📍 Marcar mi Ubicación Actual</button>
     </div>
 
+    <!-- PANEL CHOFERES -->
     <div id="panel-choferes" class="panel">
         <p style="font-size:14px; text-align:center; color:#64748b; margin-bottom:15px;">Presiona para actualizar tus asientos libres en tiempo real:</p>
         <div class="counter-container">
@@ -105,22 +117,78 @@
         <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:var(--success); margin-top: 10px;"></div>
     </div>
 
+    <!-- PANEL HORARIOS BUSES ORELLANA Y LIEBRES -->
     <div id="panel-horarios" class="panel">
-        <table>
-            <thead>
-                <tr><th>Salida</th><th>Recorrido (Lunes a Viernes)</th></tr>
-            </thead>
-            <tbody>
-                <tr><td><b>05:10</b></td><td>Paradero 10</td></tr>
-                <tr><td><b>05:20</b></td><td>El Campesino / <span style="color:var(--blue-light); font-weight:600;">vía Ibacache</span></td></tr>
-                <tr><td><b>06:30</b></td><td>Directo</td></tr>
-                <tr><td><b>07:15</b></td><td>Directo / <span style="color:var(--blue-light); font-weight:600;">vía Ibacache</span></td></tr>
-                <tr><td><b>08:00</b></td><td>Directo</td></tr>
-                <tr><td><b>12:00</b></td><td>Directo</td></tr>
-                <tr><td><b>14:30</b></td><td><span style="color:var(--blue-light); font-weight:600;">vía Ibacache</span></td></tr>
-                <tr><td><b>18:00</b></td><td>Directo</td></tr>
-            </tbody>
-        </table>
+        <div class="sub-tabs">
+            <button class="sub-btn active" onclick="switchSubTab('lv')">Lun a Vie</button>
+            <button class="sub-btn" onclick="switchSubTab('sab')">Sábado</button>
+            <button class="sub-btn" onclick="switchSubTab('dom')">Domingo</button>
+            <button class="sub-btn" onclick="switchSubTab('liebres')">Liebres</button>
+        </div>
+
+        <!-- LUNES A VIERNES -->
+        <div id="tab-lv" class="table-container active">
+            <table>
+                <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
+                <tbody>
+                    <tr><td>05:10 <span class="tag-route">P.10</span></td><td>07:45</td></tr>
+                    <tr><td>05:20 <span class="tag-route">Campesino</span></td><td>09:00</td></tr>
+                    <tr><td>05:20 <span class="tag-route">Ibacache</span></td><td>10:00</td></tr>
+                    <tr><td>05:45 <span class="tag-route">Campesino</span></td><td>11:00</td></tr>
+                    <tr><td>06:30</td><td>12:00 <span class="tag-route">Ibacache</span></td></tr>
+                    <tr><td>07:00</td><td>13:30</td></tr>
+                    <tr><td>07:15 <span class="tag-route">Ibacache</span></td><td>14:30</td></tr>
+                    <tr><td>08:00</td><td>15:15</td></tr>
+                    <tr><td>09:00</td><td>16:00</td></tr>
+                    <tr><td>10:00</td><td>17:00</td></tr>
+                    <tr><td>11:00</td><td>17:30</td></tr>
+                    <tr><td>12:00</td><td>18:15 <span class="tag-route">Ibacache</span></td></tr>
+                    <tr><td>13:30</td><td>18:35</td></tr>
+                    <tr><td>14:30 <span class="tag-route">Ibacache</span></td><td>19:00</td></tr>
+                    <tr><td>15:30</td><td>19:30</td></tr>
+                    <tr><td>16:40</td><td>20:15</td></tr>
+                    <tr><td>18:00</td><td>-</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SÁBADO -->
+        <div id="tab-sab" class="table-container">
+            <table>
+                <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
+                <tbody>
+                    <tr><td>06:30</td><td>12:00</td></tr>
+                    <tr><td>08:00</td><td>14:30</td></tr>
+                    <tr><td>10:00</td><td>16:00</td></tr>
+                    <tr><td>16:00</td><td>18:00</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DOMINGO -->
+        <div id="tab-dom" class="table-container">
+            <table>
+                <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
+                <tbody>
+                    <tr><td>17:00</td><td>19:30</td></tr>
+                    <tr><td>18:00 <span class="tag-route">Ibacache</span></td><td>20:30</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- LIEBRES LOS RULOS -->
+        <div id="tab-liebres" class="table-container">
+            <table>
+                <thead><tr><th>Salida estimada (Cada 3 hrs)</th><th>Ruta</th></tr></thead>
+                <tbody>
+                    <tr><td><b>06:00</b> (Primera salida)</td><td>Los Rulos ↔ Melipilla</td></tr>
+                    <tr><td><b>09:00</b></td><td>Los Rulos ↔ Melipilla</td></tr>
+                    <tr><td><b>12:00</b></td><td>Los Rulos ↔ Melipilla</td></tr>
+                    <tr><td><b>15:00</b></td><td>Los Rulos ↔ Melipilla</td></tr>
+                    <tr><td><b>18:00</b> (Última salida)</td><td>Los Rulos ↔ Melipilla</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Pagar con Mercado Pago</a>
@@ -132,9 +200,14 @@
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('panel-' + tabId).classList.add('active');
-        if(event && event.currentTarget) {
-            event.currentTarget.classList.add('active');
-        }
+        if(event && event.currentTarget) event.currentTarget.classList.add('active');
+    }
+
+    function switchSubTab(subTabId) {
+        document.querySelectorAll('.table-container').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + subTabId).classList.add('active');
+        if(event && event.currentTarget) event.currentTarget.classList.add('active');
     }
 
     let cupos = 4;
@@ -179,4 +252,4 @@
     }
 </script>
 </body>
-</html>
+    </html>
