@@ -2,400 +2,385 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Conecta MP">
-<meta name="mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Conecta MP - Red de Movilidad</title>
-<!-- Enlace al Manifiesto de la PWA -->
-<link rel="manifest" href="manifest.json">
-
-<!-- Script para activar la instalación en el teléfono -->
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('App lista para instalar'))
-                .catch(err => console.log('Error de instalación', err));
-        });
-    }
-</script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyA94IPQecr6rmKnU8c7XavMOQVm0d-z5OI",
-            authDomain: "maria-pinto-go.firebaseapp.com",
-            databaseURL: "https://maria-pinto-go-default-rtdb.firebaseio.com",
-            projectId: "maria-pinto-go",
-            storageBucket: "maria-pinto-go.firebasestorage.app",
-            messagingSenderId: "23436901132",
-            appId: "1:23436901132:web:9ed29497655754f611e729",
-            measurementId: "G-MNEZVJGQ0G"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.db = getDatabase(app);
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbOnValue = onValue;
-        window.dbUpdate = update;
-        window.dbGet = get;
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conecta MP</title>
+    <link rel="manifest" href="./manifest.json">
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; }
-        .map-container { height: 45vh; min-height: 300px; }
-        .btn-active-tactile:active { transform: scale(0.96); }
+        :root {
+            --primary-blue: #004b87;
+            --secondary-green: #00875a;
+            --accent-orange: #d97706;
+            --bg-light: #f4f6f9;
+            --dark-text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--dark-text);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--primary-blue);
+        }
+
+        /* login simple */
+        #login-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 75, 135, 0.2);
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-mp {
+            background-color: #009ee3;
+            font-size: 18px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 158, 227, 0.2);
+        }
+
+        /* Secciones Principales */
+        .app-section {
+            display: none;
+        }
+
+        /* Tablas de Horarios */
+        .bus-header {
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .bg-blue { background-color: var(--primary-blue); }
+        .bg-green { background-color: var(--secondary-green); }
+        .bg-orange { background-color: var(--accent-orange); }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .schedule-table th, .schedule-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .schedule-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .badge-alternative {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: #fef2f2;
+            border: 2px dashed #f87171;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .admin-panel h3 { color: #dc2626; margin-bottom: 10px; }
     </style>
 </head>
-<body class="text-slate-100 antialiased">
+<body>
 
-    <!-- PANTALLA DE ACCESO / BLOQUEO -->
-    <div id="auth-screen" class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-slate-900 rounded-3xl border border-slate-800 p-6 shadow-2xl space-y-6">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
-                    <i class="fa-solid fa-shield-halved text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-black text-white tracking-tight">Conecta MP</h2>
-                <p id="auth-subtitle" class="text-xs text-slate-400 mt-1">Regístrate para acceder a la red de movilidad local</p>
-            </div>
-
-            <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
-                <div>
-                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Nombre Completo</label>
-                    <input type="text" id="reg-name" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none" placeholder="Ej. Juan Pérez">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Número de Teléfono</label>
-                    <div class="flex gap-2">
-                        <span class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-slate-400 font-bold text-sm flex items-center">+56</span>
-                        <input type="tel" id="reg-phone" required pattern="[0-9]{9}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none" placeholder="912345678">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">¿Cómo usarás la App?</label>
-                    <select id="reg-role" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none">
-                        <option value="passenger">Soy Pasajero</option>
-                        <option value="driver">Soy Chofer de la Comuna</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 rounded-xl text-sm shadow-lg transition-all btn-active-tactile">
-                    Solicitar Acceso
-                </button>
-            </form>
-
-            <div id="blocking-message" class="hidden text-center space-y-4 py-4">
-                <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto border border-amber-500/20 animate-pulse">
-                    <i class="fa-solid fa-clock text-2xl"></i>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="text-lg font-black text-white">Cuenta Pendiente de Activación</h3>
-                    <p class="text-xs text-slate-400 px-4">Para activar tu cuenta o renovar tu cuota mensual de servicio, comunícate directamente con la administración del sistema.</p>
-                </div>
-                <button onclick="checkAuthStatus(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
-                    <i class="fa-solid fa-rotate mr-1"></i> Ya realicé el pago, verificar ahora
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- INTERFAZ PRINCIPAL -->
-    <div id="main-app" class="max-w-md mx-auto bg-slate-900 min-h-screen flex flex-col shadow-2xl relative pb-12 hidden">
-        
-        <header class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center sticky top-0 z-50">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                <h1 class="text-xl font-black tracking-tight text-white">CONECTA <span class="text-emerald-400 text-sm font-medium">MP</span></h1>
-            </div>
-            <div id="role-selector-wrapper" class="bg-slate-900 p-1 rounded-xl border border-slate-700 flex gap-1 hidden">
-                <button id="tab-passenger" onclick="switchRole('passenger')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950">Pasajero</button>
-                <button id="tab-driver" onclick="switchRole('driver')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400">Chofer</button>
-            </div>
-        </header>
-
-        <!-- MAPA -->
-        <div class="relative w-full map-container border-b border-slate-800 bg-slate-950">
-            <div id="map" class="w-full h-full"></div>
-            <div class="absolute bottom-3 left-3 z-[1000]">
-                <span id="seats-badge" class="bg-slate-950/90 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-emerald-500/30 backdrop-blur-sm">
-                    <i class="fa-solid fa-couch"></i> <span id="seats-text">Buscando...</span>
-                </span>
-            </div>
+    <div class="container">
+        <!-- Encabezado con Logo -->
+        <div class="header">
+            <img src="./icon.png" alt="Logo Conecta MP">
+            <h1>Conecta MP</h1>
         </div>
 
-        <!-- SECCIÓN PASAJERO -->
-        <main id="view-passenger" class="p-4 flex-1 flex flex-col gap-4">
-            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">¿Qué recorrido necesitas?</label>
-                <select id="passenger-route-select" onchange="changeActiveRoute(this.value)" class="w-full bg-slate-900 border-2 border-slate-700 text-white p-3.5 rounded-xl font-bold focus:border-emerald-500 text-base"></select>
+        <!-- PANTALLA 1: INGRESO -->
+        <div id="login-screen">
+            <h3>Ingresa tu código de acceso</h3>
+            <div class="input-group">
+                <input type="password" id="access-code" placeholder="••••">
+            </div>
+            <button class="btn" onclick="validateCode()">Entrar</button>
+            <p id="error-msg" style="color:red; margin-top:10px; display:none;">Código incorrecto</p>
+        </div>
+
+        <!-- PANTALLA 2: CONTENIDO PRINCIPAL (USUARIO) -->
+        <div id="main-screen" class="app-section">
+            
+            <!-- Botón de Pago Automático -->
+            <a href="https://mpago.la/14kajSj" id="mp-link" target="_blank" class="btn btn-mp">
+                💳 Pagar con Mercado Pago
+            </a>
+
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:25px 0;">
+
+            <h2 style="text-align: center; color: var(--primary-blue); margin-bottom: 10px;">🕒 Horarios Buses Orellana</h2>
+
+            <!-- LUNES A VIERNES: BOLLENAR -> SANTIAGO -->
+            <div class="bus-header bg-blue">➡️ BOLLENAR ➔ SANTIAGO (Lunes a Viernes)</div>
+            <table class="schedule-table">
+                <thead>
+                    <tr><th>Salida</th><th>Detalle / Recorrido</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>5:10</td><td>Paradero 10</td></tr>
+                    <tr><td>5:20</td><td>El Campesino</td></tr>
+                    <tr><td>5:20</td><td><span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td>5:45</td><td>El Campesino</td></tr>
+                    <tr><td>6:30</td><td>Directo</td></tr>
+                    <tr><td>7:00</td><td>Directo</td></tr>
+                    <tr><td>7:15</td><td><span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td>8:00</td><td>Directo</td></tr>
+                    <tr><td>9:00</td><td>Directo</td></tr>
+                    <tr><td>10:00</td><td>Directo</td></tr>
+                    <tr><td>11:00</td><td>Directo</td></tr>
+                    <tr><td>12:00</td><td>Directo</td></tr>
+                    <tr><td>13:30</td><td>Directo</td></tr>
+                    <tr><td>14:30</td><td><span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td>15:30</td><td>Directo</td></tr>
+                    <tr><td>16:40</td><td>Directo</td></tr>
+                    <tr><td>18:00</td><td>Directo</td></tr>
+                </tbody>
+            </table>
+
+            <!-- LUNES A VIERNES: SANTIAGO -> BOLLENAR -->
+            <div class="bus-header bg-green">⬅️ SANTIAGO ➔ BOLLENAR (Lunes a Viernes)</div>
+            <table class="schedule-table">
+                <thead>
+                    <tr><th>Salida</th><th>Detalle / Recorrido</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>7:45</td><td>Directo</td></tr>
+                    <tr><td>9:00</td><td>Directo</td></tr>
+                    <tr><td>10:00</td><td>Directo</td></tr>
+                    <tr><td>11:00</td><td>Directo</td></tr>
+                    <tr><td>12:00</td><td><span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td>13:30</td><td>Directo</td></tr>
+                    <tr><td>14:30</td><td>Directo</td></tr>
+                    <tr><td>15:15</td><td>Directo</td></tr>
+                    <tr><td>16:00</td><td>Directo</td></tr>
+                    <tr><td>17:00</td><td>Directo</td></tr>
+                    <tr><td>17:30</td><td>Directo</td></tr>
+                    <tr><td>18:15</td><td><span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td>18:35</td><td>Directo</td></tr>
+                    <tr><td>19:00</td><td>Directo</td></tr>
+                    <tr><td>19:30</td><td>Directo</td></tr>
+                    <tr><td>20:15</td><td>Directo</td></tr>
+                </tbody>
+            </table>
+
+            <!-- SÁBADO -->
+            <div class="bus-header bg-orange">📅 SÁBADO</div>
+            <table class="schedule-table">
+                <thead>
+                    <tr><th>Origen</th><th>Horarios de Salida</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>Desde Bollenar</b></td><td>6:30 | 8:00 | 10:00 | 16:00</td></tr>
+                    <tr><td><b>Desde Santiago</b></td><td>12:00 | 14:30 | 16:00 | 18:00</td></tr>
+                </tbody>
+            </table>
+
+            <!-- DOMINGO -->
+            <div class="bus-header bg-orange" style="background-color: #b91c1c;">📅 DOMINGO</div>
+            <table class="schedule-table">
+                <thead>
+                    <tr><th>Origen</th><th>Horarios de Salida</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>Desde Bollenar</b></td><td>17:00 | 18:00 <span class="badge-alternative">vía Ibacache</span></td></tr>
+                    <tr><td><b>Desde Santiago</b></td><td>19:30 | 20:30</td></tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                ℹ️ <b>Notas Importantes:</b><br>
+                • "vía Ibacache" indica recorrido alternativo.<br>
+                • Algunos horarios salen desde paraderos específicos (El Campesino, Paradero 10).<br>
+                • Horarios sujetos a cambios sin previo aviso.
             </div>
 
-            <!-- Instrucción Interactiva del Mapa -->
-            <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex gap-3 items-center">
-                <div class="text-emerald-400 text-xl"><i class="fa-solid fa-hand-pointer animate-bounce"></i></div>
-                <p class="text-xs text-slate-300 leading-relaxed font-medium">
-                    <b class="text-emerald-400 block font-black">¡Marca tu punto exacto!</b>
-                    Toca cualquier parte del mapa arriba para indicarle al chofer exactamente dónde estás parado esperando la locomoción.
-                </p>
-            </div>
+            <button class="btn" style="background: #64748b; margin-top:25px;" onclick="logout()">Cerrar Sesión</button>
+        </div>
 
-            <div id="passenger-status-card" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center hidden">
-                <p class="text-xs font-bold text-slate-400">Tu estado actual en esta ruta:</p>
-                <p id="passenger-status-text" class="text-base font-black text-emerald-400 mt-1">Esperando locomoción...</p>
-                <button onclick="cancelCustomStop()" class="mt-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold px-4 py-2 rounded-lg border border-red-500/20">Cancelar Alerta</button>
-            </div>
-        </main>
+        <!-- PANTALLA 3: PANEL DE ADMINISTRADOR -->
+        <div id="admin-screen" class="app-section admin-panel">
+            <h3>🛠️ Panel de Gestión (Administrador)</h3>
+            <p style="margin-bottom: 15px; font-size:14px;">Modo Jefe activado automáticamente.</p>
+            
+            <label style="font-weight: bold; font-size: 14px;">Editar Link de Mercado Pago:</label>
+            <input type="text" id="admin-mp-url" style="width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:6px;" value="https://mpago.la/14kajSj">
+            
+            <button class="btn" style="background-color: var(--secondary-green); margin-bottom:10px;" onclick="saveAdminChanges()">Guardar Cambios</button>
+            <button class="btn" style="background-color: #475569;" onclick="logout()">Salir del Panel</button>
+        </div>
 
-        <!-- SECCIÓN CHOFER -->
-        <main id="view-driver" class="p-4 flex-1 flex flex-col gap-4 hidden">
-            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Línea que Conduces Hoy</label>
-                <select id="driver-route-select" onchange="changeActiveRoute(this.value)" class="w-full bg-slate-900 border-2 border-slate-700 text-white p-3.5 rounded-xl font-bold focus:border-indigo-500 text-base"></select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <button id="btn-seats-available" onclick="setDriverSeats(true)" class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-center font-bold text-xs"><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>Con Asientos</button>
-                <button id="btn-seats-full" onclick="setDriverSeats(false)" class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-center font-bold text-xs"><i class="fa-solid fa-circle-xmark text-red-400 mr-1"></i>Bus Lleno</button>
-            </div>
-            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex-1 flex flex-col">
-                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Pasajeros esperando en Ruta</h3>
-                <div id="driver-passengers-list" class="space-y-2 flex-1 overflow-y-auto max-h-48"></div>
-            </div>
-            <button id="btn-gps-master" onclick="toggleGpsTransmission()" class="w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"><i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÓN GPS</button>
-        </main>
     </div>
 
     <script>
-        // NOMBRES ACTUALIZADOS CON LAS LÍNEAS REALES DE MARÍA PINTO
-        const routesData = {
-            "buses-santiago": { name: "Buses: Bollenar - Santiago", color: "#ef4444", center: [-33.5234, -71.1168] },
-            "liebres-melipilla": { name: "Liebre: Los Rulos - Melipilla", color: "#f59e0b", center: [-33.5510, -71.1620] },
-            "colectivo-linea-1": { name: "Colectivo L1: Lolenco - María Pinto", color: "#10b981", center: [-33.5234, -71.1168] },
-            "colectivo-linea-2": { name: "Colectivo L2: Melipilla - Los Rulos", color: "#6366f1", center: [-33.5110, -71.0950] }
-        };
+        // Sistema de accesos simple
+        function validateCode() {
+            const code = document.getElementById('access-code').value.trim();
+            const loginScreen = document.getElementById('login-screen');
+            const mainScreen = document.getElementById('main-screen');
+            const adminScreen = document.getElementById('admin-screen');
+            const errorMsg = document.getElementById('error-msg');
 
-        let currentRole = "passenger";
-        let currentRouteId = "buses-santiago";
-        let map, vehicleMarker, passengerMarker = null;
-        let watchGpsId = null;
-        let activePassengerMarkers = {};
-
-        function checkAuthStatus(isManualRefresh = false) {
-            const savedPhone = localStorage.getItem('user_phone');
-            if (!savedPhone) { document.getElementById('auth-screen').classList.remove('hidden'); return; }
-            if (!window.db) { setTimeout(() => checkAuthStatus(isManualRefresh), 500); return; }
-
-            window.dbGet(window.dbRef(window.db, `users/${savedPhone}`)).then((snapshot) => {
-                const userData = snapshot.val();
-                if (userData && userData.active === true) {
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    if (userData.role === 'driver') {
-                        document.getElementById('role-selector-wrapper').classList.remove('hidden');
-                        switchRole('driver');
-                    } else { switchRole('passenger'); }
-                    if(!map) initMap();
-                } else {
-                    document.getElementById('register-form').classList.add('hidden');
-                    document.getElementById('blocking-message').classList.remove('hidden');
-                }
-            });
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            const phone = "+56" + document.getElementById('reg-phone').value.trim();
-            const newUser = {
-                name: document.getElementById('reg-name').value.trim(),
-                phone: phone,
-                role: document.getElementById('reg-role').value,
-                active: false,
-                registeredAt: Date.now()
-            };
-            window.dbSet(window.dbRef(window.db, `users/${phone}`), newUser).then(() => {
-                localStorage.setItem('user_phone', phone);
-                checkAuthStatus();
-            });
-        }
-
-        function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([-33.5234, -71.1168], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM' }).addTo(map);
-
-            const vehicleIcon = L.divIcon({
-                html: `<div class="bg-emerald-400 text-slate-950 w-9 h-9 rounded-full flex items-center justify-center shadow-2xl border-2 border-white font-bold"><i class="fa-solid fa-bus text-sm"></i></div>`,
-                className: '', iconSize: [36, 36], iconAnchor: [18, 18]
-            });
-            vehicleMarker = L.marker([-33.5234, -71.1168], { icon: vehicleIcon }).addTo(map);
-
-            map.on('click', function(e) {
-                if (currentRole !== 'passenger') return;
-                sendCustomStop(e.latlng.lat, e.latlng.lng);
-            });
-
-            populateSelects();
-            changeActiveRoute(currentRouteId);
-        }
-
-        function populateSelects() {
-            const pSelect = document.getElementById('passenger-route-select');
-            const dSelect = document.getElementById('driver-route-select');
-            pSelect.innerHTML = dSelect.innerHTML = "";
-            Object.keys(routesData).forEach(key => {
-                const opt = `<option value="${key}">${routesData[key].name}</option>`;
-                pSelect.innerHTML += opt; dSelect.innerHTML += opt;
-            });
-        }
-
-        function switchRole(role) {
-            currentRole = role;
-            document.getElementById('view-passenger').classList.toggle('hidden', role !== 'passenger');
-            document.getElementById('view-driver').classList.toggle('hidden', role !== 'driver');
-            document.getElementById('tab-passenger').className = role === 'passenger' ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400";
-            document.getElementById('tab-driver').className = role === 'driver' ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400";
-            
-            Object.values(activePassengerMarkers).forEach(m => map.removeLayer(m));
-            activePassengerMarkers = {};
-        }
-
-        function changeActiveRoute(routeId) {
-            currentRouteId = routeId;
-            document.getElementById('passenger-route-select').value = routeId;
-            document.getElementById('driver-route-select').value = routeId;
-            
-            Object.values(activePassengerMarkers).forEach(m => map.removeLayer(m));
-            activePassengerMarkers = {};
-            if(passengerMarker) { map.removeLayer(passengerMarker); passengerMarker = null; }
-            document.getElementById('passenger-status-card').classList.add('hidden');
-
-            map.panTo(routesData[routeId].center);
-            listenToFirebaseRoute();
-        }
-
-        function sendCustomStop(lat, lng) {
-            const phone = localStorage.getItem('user_phone');
-            if(!phone || !window.db) return;
-
-            if(passengerMarker) map.removeLayer(passengerMarker);
-
-            const passIcon = L.divIcon({
-                html: `<div class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-pulse"><i class="fa-solid fa-street-view"></i></div>`,
-                className: '', iconSize: [32, 32], iconAnchor: [16, 16]
-            });
-            passengerMarker = L.marker([lat, lng], { icon: passIcon }).addTo(map);
-
-            window.dbSet(window.dbRef(window.db, `routes/${currentRouteId}/customStops/${phone.replace('+', '')}`), {
-                lat: lat,
-                lng: lng,
-                phone: phone,
-                timestamp: Date.now()
-            }).then(() => {
-                document.getElementById('passenger-status-card').classList.remove('hidden');
-                document.getElementById('passenger-status-text').textContent = "Ubicación enviada. ¡El chofer puede ver tu punto exacto!";
-            });
-        }
-
-        function cancelCustomStop() {
-            const phone = localStorage.getItem('user_phone');
-            if(!phone || !window.db) return;
-            window.dbSet(window.dbRef(window.db, `routes/${currentRouteId}/customStops/${phone.replace('+', '')}`), null).then(() => {
-                if(passengerMarker) { map.removeLayer(passengerMarker); passengerMarker = null; }
-                document.getElementById('passenger-status-card').classList.add('hidden');
-            });
-        }
-
-        function listenToFirebaseRoute() {
-            if (!window.db) return;
-            window.dbOnValue(window.dbRef(window.db, `routes/${currentRouteId}`), (snapshot) => {
-                const data = snapshot.val(); if (!data) return;
-                
-                if (data.gps && data.gps.lat && data.gps.lng) {
-                    vehicleMarker.setLatLng([data.gps.lat, data.gps.lng]);
-                }
-
-                document.getElementById('seats-text').textContent = data.seatsAvailable === false ? "Bus Lleno" : "Asientos Disponibles";
-                document.getElementById('seats-badge').className = data.seatsAvailable === false ? "bg-red-500/20 text-red-400 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-red-500/30" : "bg-slate-950/90 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-emerald-500/30";
-
-                const listContainer = document.getElementById('driver-passengers-list');
-                if(listContainer) listContainer.innerHTML = "";
-                
-                Object.keys(activePassengerMarkers).forEach(key => {
-                    if(!data.customStops || !data.customStops[key]) {
-                        map.removeLayer(activePassengerMarkers[key]);
-                        delete activePassengerMarkers[key];
-                    }
-                });
-
-                if (data.customStops) {
-                    Object.keys(data.customStops).forEach(key => {
-                        const stop = data.customStops[key];
-                        
-                        if (!activePassengerMarkers[key]) {
-                            const customIcon = L.divIcon({
-                                html: `<div class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white scale-110"><i class="fa-solid fa-street-view"></i></div>`,
-                                className: '', iconSize: [32, 32], iconAnchor: [16, 16]
-                            });
-                            activePassengerMarkers[key] = L.marker([stop.lat, stop.lng], { icon: customIcon }).addTo(map);
-                            activePassengerMarkers[key].bindPopup(`<b>Pasajero en Ruta</b><br>Tel: ${stop.phone}`);
-                        }
-
-                        if (currentRole === 'driver' && listContainer) {
-                            listContainer.innerHTML += `
-                                <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center">
-                                    <div>
-                                        <p class="font-black text-xs text-white">Pasajero Esperando</p>
-                                        <p class="text-[10px] text-slate-400">Tel: ${stop.phone}</p>
-                                    </div>
-                                    <button onclick="clearPassenger('${key}')" class="bg-indigo-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg">Recogido</button>
-                                </div>`;
-                        }
-                    });
-                }
-                if(currentRole === 'driver' && listContainer && listContainer.innerHTML === "") {
-                    listContainer.innerHTML = `<div class="p-4 border border-dashed border-slate-800 rounded-xl text-center text-slate-500 text-xs font-bold">Nadie esperando en esta ruta.</div>`;
-                }
-            });
-        }
-
-        function clearPassenger(key) {
-            if(!window.db) return;
-            window.dbSet(window.dbRef(window.db, `routes/${currentRouteId}/customStops/${key}`), null);
-        }
-
-        function setDriverSeats(isAvailable) {
-            if (!window.db) return; window.dbUpdate(window.dbRef(window.db, `routes/${currentRouteId}`), { seatsAvailable: isAvailable });
-        }
-
-        function toggleGpsTransmission() {
-            const btn = document.getElementById('btn-gps-master');
-            if (watchGpsId === null) {
-                btn.className = "w-full bg-red-600 text-white font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `DETENER TRANSMISIÓN GPS`;
-                watchGpsId = navigator.geolocation.watchPosition((position) => {
-                    const lat = position.coords.latitude; const lng = position.coords.longitude;
-                    vehicleMarker.setLatLng([lat, lng]);
-                    if (window.db) window.dbUpdate(window.dbRef(window.db, `routes/${currentRouteId}/gps`), { lat: lat, lng: lng, timestamp: Date.now() });
-                }, (error) => console.error(error), { enableHighAccuracy: true });
+            // CÓDIGO MAESTRO DE ADMINISTRACIÓN
+            if (code.toUpperCase() === 'ADMIN2026') {
+                loginScreen.style.display = 'none';
+                mainScreen.style.display = 'block';
+                adminScreen.style.display = 'block'; // Muestra panel extra de control
+                errorMsg.style.display = 'none';
+                localStorage.setItem('user_role', 'admin');
+            } 
+            // CÓDIGO NORMAL (Sustituir por el código de usuario que usabas habitualmente)
+            else if (code === '1234' || code !== '') { 
+                loginScreen.style.display = 'none';
+                mainScreen.style.display = 'block';
+                adminScreen.style.display = 'none';
+                errorMsg.style.display = 'none';
+                localStorage.setItem('user_role', 'user');
             } else {
-                navigator.geolocation.clearWatch(watchGpsId); watchGpsId = null;
-                btn.className = "w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `<i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÓN GPS`;
+                errorMsg.style.display = 'block';
             }
         }
 
-        setTimeout(checkAuthStatus, 500);
+        function saveAdminChanges() {
+            const newUrl = document.getElementById('admin-mp-url').value;
+            document.getElementById('mp-link').href = newUrl;
+            alert('¡Enlace de Mercado Pago actualizado de forma automática en la app!');
+        }
+
+        function logout() {
+            localStorage.removeItem('user_role');
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('admin-screen').style.display = 'none';
+            document.getElementById('access-code').value = '';
+        }
+
+        // Mantener sesión activa si ya ingresó
+        window.onload = function() {
+            const savedRole = localStorage.getItem('user_role');
+            if (savedRole === 'admin') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-screen').style.display = 'block';
+                document.getElementById('admin-screen').style.display = 'block';
+            } else if (savedRole === 'user') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-screen').style.display = 'block';
+            }
+        };
+    </script>
+
+    <script>
+        // Registro del Service Worker para funcionamiento PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error', err));
+            });
+        }
     </script>
 </body>
 </html>
-<link rel="manifest" href="manifest.json">
