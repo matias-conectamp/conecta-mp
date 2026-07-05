@@ -3,72 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conecta MP - Premium Dark</title>
+    <title>Conecta MP - Premium Ultimate</title>
     <style>
         :root {
-            --bg-main: #0b0f19;       /* Fondo oscuro general de la app */
-            --bg-card: #1e293b;       /* Fondo de la tarjeta (azul grisáceo oscuro) */
-            --primary-light: #f8fafc; /* Texto claro principal */
-            --blue-accent: #2563eb;   /* Azul eléctrico corporativo */
-            --blue-glow: #3b82f6;     /* Azul brillante para elementos activos */
-            --success: #0f766e;       /* Verde esmeralda oscuro */
-            --text-muted: #94a3b8;    /* Texto secundario atenuado */
+            --bg-main: #0b0f19;       
+            --bg-card: #1e293b;       
+            --primary-light: #f8fafc; 
+            --blue-accent: #2563eb;   
+            --blue-glow: #3b82f6;     
+            --success: #0f766e;       
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-muted: #94a3b8;    
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: var(--bg-main); color: var(--primary-light); padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* Contenedor Principal Modernizado */
         .container { width: 100%; max-width: 480px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Encabezado y Logo Estilizado */
+        /* Encabezado */
         .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 24px; gap: 8px; }
         .brand-logo { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); border-radius: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); font-size: 24px; color: white; animation: float 3s ease-in-out infinite; }
         .brand-title { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* Pantalla de Ingreso / Pago (Login) */
+        /* Pantallas */
         #auth-screen { display: block; }
-        #main-app-content { display: none; } /* Oculto hasta que ingresen datos */
+        #main-app-content { display: none; } 
 
-        /* Navegación Premium Dark */
-        .tabs { display: flex; gap: 6px; background: #0f172a; padding: 4px; border-radius: 14px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .tab-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 14px; transition: all 0.2s ease; }
+        /* Navegación */
+        .tabs { display: flex; gap: 4px; background: #0f172a; padding: 4px; border-radius: 14px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .tab-btn { flex: 1; padding: 12px 4px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 12px; transition: all 0.2s ease; }
         .tab-btn.active { background: var(--bg-card); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Paneles */
         .panel { display: none; margin-bottom: 15px; }
         .panel.active { display: block; }
         
-        /* Elementos de Formulario Oscuros */
+        /* Formularios */
         label { font-size: 13px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 6px; }
         select, textarea, input[type="text"], input[type="tel"] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; font-size: 15px; background-color: #0f172a; color: white; transition: all 0.2s; }
         select:focus, textarea:focus, input:focus { outline: none; border-color: var(--blue-glow); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
         
-        /* El Mapa GPS Protagonista */
-        .map-container { position: relative; height: 240px; background: #090d16; border-radius: 16px; margin: 16px 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        /* Filtro de Bloqueo Premium */
+        .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
+        .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(6px); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+
+        /* El Mapa GPS */
+        .map-container { position: relative; height: 210px; background: #090d16; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         .map-container::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; }
         .map-content { z-index: 2; text-align: center; width: 100%; padding: 20px; }
         .map-icon { font-size: 32px; animation: pulse 2s infinite; margin-bottom: 8px; display: inline-block; }
         .status-badge { display: inline-block; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 5px; }
         
-        /* Botones Estilizados */
-        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 16px; margin-bottom: 12px; transition: all 0.2s; }
+        /* Muro de Reportes */
+        .report-card { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--blue-accent); }
+        .report-card.danger { border-left-color: var(--danger); }
+        .report-card.warning { border-left-color: var(--warning); }
+        .report-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: bold; }
+        .report-body { font-size: 14px; color: #e2e8f0; font-weight: 500; }
+
+        /* Botones */
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 15px; margin-bottom: 12px; transition: all 0.2s; }
         .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-        .btn-blue:hover { filter: brightness(1.1); }
+        .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.3); }
         .btn-green { background: var(--success); }
-        .btn-mp { background: #009ee3; font-size: 17px; margin-top: 5px; }
+        .btn-mp { background: #009ee3; font-size: 16px; margin-top: 5px; }
         
         /* Contador Choferes */
         .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
-        .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 24px; font-weight: bold; color: white; cursor: pointer; background: #0f172a; transition: all 0.1s; }
-        .btn-count:active { background: #1e293b; }
+        .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 24px; font-weight: bold; color: white; cursor: pointer; background: #0f172a; }
         .count-display { font-size: 42px; font-weight: 800; color: white; }
         
-        /* Tablas y Sub-pestañas de Horarios (Estilo Oscuro) */
+        /* Tablas de Horarios */
         .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
-        .sub-btn { flex: 1; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
+        .sub-btn { flex: 1; padding: 8px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
         .sub-btn.active { background: var(--blue-accent); color: white; border-color: var(--blue-accent); }
         
-        .table-container { display: none; max-height: 380px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .table-container { display: none; max-height: 320px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .table-container.active { display: block; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; background: #0f172a; }
@@ -76,29 +86,19 @@
         th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.1); }
         .tag-route { display: inline-block; padding: 2px 6px; background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-radius: 4px; font-size: 11px; font-weight: bold; }
         
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-            100% { transform: translateY(0px); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-4px); } 100% { transform: translateY(0px); } }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <!-- LOGO Y NOMBRE PREMIUM GLOBAL -->
     <div class="brand-header">
         <div class="brand-logo">📡</div>
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
-    <!-- PANTALLA DE INGRESO Y PAGO -->
     <div id="auth-screen">
         <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
             Ingresa tus datos para conectarte con el transporte de María Pinto.
@@ -110,16 +110,15 @@
         <label for="auth-phone">Teléfono de Contacto:</label>
         <input type="tel" id="auth-phone" placeholder="Ej: +56912345678">
 
-        <label for="auth-role">Tipo de Usuario:</label>
+        <label for="auth-role">Tipo de Perfil Inicial:</label>
         <select id="auth-role">
             <option value="pasajeros">📱 Pasajero / Vecino</option>
             <option value="choferes">🚗 Chofer de Colectivo o Liebre</option>
         </select>
 
         <p style="font-size:12px; color:var(--text-muted); margin: 15px 0 5px 0; font-weight:600; text-align:center;">
-            ACTIVA TU ACCESO:
+            PAGO VOLUNTARIO / ACTIVACIÓN PREMIUM:
         </p>
-        <!-- BOTÓN DE MERCADO PAGO INTEGRADO -->
         <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Pagar con Mercado Pago</a>
         
         <div style="margin-top: 20px;">
@@ -127,18 +126,16 @@
         </div>
     </div>
 
-    <!-- CONTENIDO PRINCIPAL DE LA APP (OCULTO AL INICIO) -->
     <div id="main-app-content">
-        <!-- PESTAÑAS PRINCIPALES -->
         <div class="tabs">
-            <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">📱 Pasajeros</button>
+            <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
+            <button class="tab-btn" id="btn-tab-reportes" onclick="switchTab('reportes')">⚠️ Reportes</button>
             <button class="tab-btn" id="btn-tab-choferes" onclick="switchTab('choferes')">🚗 Choferes</button>
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Buses</button>
         </div>
 
-        <!-- PANEL PASAJEROS -->
         <div id="panel-pasajeros" class="panel active">
-            <label>Selecciona tu transporte:</label>
+            <label>Selecciona tu línea de transporte:</label>
             <select id="select-servicio">
                 <option>Línea 1 Colectivos (Lolenco - María Pinto)</option>
                 <option>Línea 2 Colectivos (Los Rulos - Melipilla)</option>
@@ -147,47 +144,79 @@
             </select>
             
             <label style="display:flex; align-items:center; gap:10px; margin-bottom:14px; font-weight:500; cursor:pointer;">
-                <input type="checkbox" id="check-equipaje" style="width:18px; height:18px; accent-color: var(--blue-accent);"> ¿Llevas equipaje o bultos grandes?
+                <input type="checkbox" id="check-equipaje" style="width:18px; height:18px; accent-color: var(--blue-accent);"> ¿Llevas bultos grandes o maletas?
             </label>
             
-            <textarea id="msg-pasajero" rows="2" placeholder="Mensaje rápido al chofer (Ej: 'En el paradero 5')"></textarea>
+            <textarea id="msg-pasajero" rows="2" placeholder="Nota para el chofer (Ej: 'Esperando frente al almacén')"></textarea>
             
-            <!-- MAPA PREMIUM DARK -->
-            <div class="map-container" id="mapa-pasajero">
-                <div class="map-content">
-                    <span class="map-icon">🛰️</span>
-                    <div style="font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; letter-spacing: 0.5px;">SISTEMA DE GEOLOCALIZACIÓN</div>
-                    <div class="status-badge" id="gps-coords">Buscando coordenadas GPS...</div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top:10px; font-weight: 500;" id="live-driver-status">Esperando señal de vehículos en ruta...</div>
+            <div class="premium-blur-zone">
+                <div class="premium-overlay" id="premium-lock">
+                    <span style="font-size: 26px; margin-bottom: 4px;">🔒</span>
+                    <div style="font-weight: 800; font-size: 15px; color: white;">RASTREADOR PREMIUM EN VIVO</div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 12px 0; max-width: 250px;">
+                        Mira mapas satelitales en vivo y comparte tu ubicación exacta con los choferes.
+                    </p>
+                    <a href="https://mpago.la/14kajSj" target="_blank" class="btn btn-gold" style="padding: 10px 16px; font-size: 12px; margin-bottom: 4px; width:auto;">👑 Desbloquear Mapa GPS</a>
+                    <button onclick="simularPagoExitoso()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer;">[Simular Pago Exitoso]</button>
                 </div>
+
+                <div class="map-container">
+                    <div class="map-content">
+                        <span class="map-icon">🛰️</span>
+                        <div style="font-size: 14px; font-weight: 700; color: white;">LOCALIZACIÓN EN RUTA</div>
+                        <div class="status-badge" id="gps-coords">Buscando señal GPS...</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;" id="live-driver-status">Esperando señal de vehículos...</div>
+                    </div>
+                </div>
+                <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir mi Ubicación en Ruta</button>
             </div>
-            
-            <button class="btn btn-blue" onclick="enviarAlertaPasajero()">📍 Marcar mi Ubicación Actual</button>
         </div>
 
-        <!-- PANEL CHOFERES -->
+        <div id="panel-reportes" class="panel">
+            <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="color: #60a5fa;">📣 Informar Accidente, Taco o Panne:</label>
+                <input type="text" id="report-text" placeholder="Ej: Taco pesado ingresando a Melipilla...">
+                <select id="report-type">
+                    <option value="warning">⚠️ Retraso / Taco / Desvío</option>
+                    <option value="danger">🚨 Accidente / Liebre en Panne</option>
+                    <option value="info">ℹ️ Estado normal / Noticia General</option>
+                </select>
+                <button class="btn btn-blue" style="padding:10px; font-size:14px; margin-bottom:0;" onclick="publicarReporte()">Publicar Reporte Crítico</button>
+            </div>
+
+            <label>Muro de Tránsito (Comunidad María Pinto):</label>
+            <div id="muro-reportes">
+                <div class="report-card danger">
+                    <div class="report-header"><span>🚨 ACCIDENTE / PANNE</span><span>Hace 5 min</span></div>
+                    <div class="report-body">Liebre de las 15:00 en panne en sector Chorombo. Viene máquina de reemplazo en camino.</div>
+                </div>
+                <div class="report-card warning">
+                    <div class="report-header"><span>⚠️ TACO / CONGESTIÓN</span><span>Hace 20 min</span></div>
+                    <div class="report-body">Tráfico lento en San Manuel ingresando a Melipilla por trabajos viales.</div>
+                </div>
+            </div>
+        </div>
+
         <div id="panel-choferes" class="panel">
-            <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:15px;">Presiona para actualizar tus asientos libres en tiempo real:</p>
+            <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:15px;">Modifica la disponibilidad de asientos vacíos de tu máquina:</p>
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
                 <div class="count-display" id="cupos-actuales">4</div>
                 <button class="btn-count" onclick="cambiarCupo(1)">+</button>
             </div>
-            <p style="text-align:center; font-weight:700; font-size:13px; color:var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;">Cupos del Vehículo</p>
+            <p style="text-align:center; font-weight:700; font-size:13px; color:var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;">Asientos Disponibles</p>
             <button class="btn btn-green" onclick="activarRutaChofer()">📡 Activar Transmisión en Vivo</button>
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
         </div>
 
-        <!-- PANEL HORARIOS BUSES -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
-                <button class="sub-btn active" onclick="switchSubTab('lv')">Lun a Vie</button>
-                <button class="sub-btn" onclick="switchSubTab('sab')">Sábado</button>
-                <button class="sub-btn" onclick="switchSubTab('dom')">Domingo</button>
-                <button class="sub-btn" onclick="switchSubTab('liebres')">Liebres</button>
+                <button class="sub-btn active" id="sbtn-lv" onclick="switchSubTab('lv')">Lun a Vie</button>
+                <button class="sub-btn" id="sbtn-sab" onclick="switchSubTab('sab')">Sábado</button>
+                <button class="sub-btn" id="sbtn-dom" onclick="switchSubTab('dom')">Domingo</button>
+                <button class="sub-btn" id="sbtn-liebres" onclick="switchSubTab('liebres')">Liebres</button>
             </div>
 
-            <!-- LUNES A VIERNES -->
             <div id="tab-lv" class="table-container active">
                 <table>
                     <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
@@ -213,7 +242,6 @@
                 </table>
             </div>
 
-            <!-- SÁBADO -->
             <div id="tab-sab" class="table-container">
                 <table>
                     <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
@@ -226,7 +254,6 @@
                 </table>
             </div>
 
-            <!-- DOMINGO -->
             <div id="tab-dom" class="table-container">
                 <table>
                     <thead><tr><th>Bollenar → Stgo</th><th>Stgo → Bollenar</th></tr></thead>
@@ -237,10 +264,9 @@
                 </table>
             </div>
 
-            <!-- LIEBRES LOS RULOS -->
             <div id="tab-liebres" class="table-container">
                 <table>
-                    <thead><tr><th>Salida estimada (Cada 3 hrs)</th><th>Ruta</th></tr></thead>
+                    <thead><tr><th>Salida (Cada 3 hrs)</th><th>Ruta Asignada</th></tr></thead>
                     <tbody>
                         <tr><td><b>06:00</b> (Primera salida)</td><td>Los Rulos ↔ Melipilla</td></tr>
                         <tr><td><b>09:00</b></td><td>Los Rulos ↔ Melipilla</td></tr>
@@ -252,20 +278,16 @@
             </div>
         </div>
 
-        <!-- BOTÓN CERRAR SESIÓN -->
-        <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:15px;" onclick="cerrarSesion()">🚪 Salir de mi Cuenta</button>
+        <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
-    <!-- PANEL ADMINISTRADOR MAESTRO -->
-    <button class="btn" style="background:transparent; color:var(--text-muted); font-size:11px; padding:4px; margin-top:5px;" onclick="abrirAdminMaestro()">⚙️ Panel Maestro</button>
+    <button class="btn" style="background:transparent; color:var(--text-muted); font-size:11px; padding:4px; margin-top:10px;" onclick="abrirAdminMaestro()">⚙️ Panel de Administración</button>
 </div>
 
 <script>
-    // Al cargar la página, comprueba si el usuario ya ingresó antes
     window.onload = function() {
         const usuarioGuardado = localStorage.getItem('conecta_mp_user');
         const rolGuardado = localStorage.getItem('conecta_mp_role');
-        
         if (usuarioGuardado && rolGuardado) {
             autenticarYMostrarApp(rolGuardado);
         }
@@ -276,66 +298,4 @@
         const telefono = document.getElementById('auth-phone').value.trim();
         const rol = document.getElementById('auth-role').value;
 
-        if (nombre === "" || telefono === "") {
-            alert("⚠️ Por favor, ingresa tu nombre y teléfono para continuar.");
-            return;
-        }
-
-        // Guardar datos localmente en el celular
-        localStorage.setItem('conecta_mp_user', nombre);
-        localStorage.setItem('conecta_mp_phone', telefono);
-        localStorage.setItem('conecta_mp_role', rol);
-
-        alert(`¡Bienvenido, ${nombre}! Datos registrados de forma segura.`);
-        autenticarYMostrarApp(rol);
-    }
-
-    function autenticarYMostrarApp(rolActivo) {
-        // Intercambiar pantallas
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app-content').style.display = 'block';
-
-        // Activar la pestaña según el rol que eligió
-        switchTab(rolActivo);
-    }
-
-    function cerrarSesion() {
-        if(confirm("¿Seguro que deseas salir? Deberás ingresar tus datos nuevamente.")) {
-            localStorage.clear();
-            document.getElementById('main-app-content').style.display = 'none';
-            document.getElementById('auth-screen').style.display = 'block';
-            document.getElementById('auth-name').value = "";
-            document.getElementById('auth-phone').value = "";
-        }
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        
-        const panelTarget = document.getElementById('panel-' + tabId);
-        const btnTarget = document.getElementById('btn-tab-' + tabId);
-        
-        if(panelTarget) panelTarget.classList.add('active');
-        if(btnTarget) btnTarget.classList.add('active');
-    }
-
-    function switchSubTab(subTabId) {
-        document.querySelectorAll('.table-container').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + subTabId).classList.add('active');
-        if(event && event.currentTarget) event.currentTarget.classList.add('active');
-    }
-
-    let cupos = 4;
-    function cambiarCupo(valor) {
-        cupos = Math.max(0, Math.min(15, cupos + valor));
-        document.getElementById('cupos-actuales').innerText = cupos;
-        const liveStatus = document.getElementById('live-driver-status');
-        if(liveStatus) liveStatus.innerText = `Próximo vehículo: Activo con ${cupos} cupos libres`;
-    }
-
-    function activarRutaChofer() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition((p) => {
-                document.getElementById('chofer-
+        if (nombre === "" || tel
