@@ -11,13 +11,13 @@
 <!-- Enlace al Manifiesto de la PWA -->
 <link rel="manifest" href="manifest.json">
 
-<!-- Script para activar la instalación en el teléfono -->
+<!-- Script para activar la instalaciÃ³n en el telÃ©fono -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
                 .then(reg => console.log('App lista para instalar'))
-                .catch(err => console.log('Error de instalación', err));
+                .catch(err => console.log('Error de instalaciÃ³n', err));
         });
     }
 </script>
@@ -71,23 +71,23 @@
                     <i class="fa-solid fa-shield-halved text-xl"></i>
                 </div>
                 <h2 class="text-2xl font-black text-white tracking-tight">Conecta MP</h2>
-                <p id="auth-subtitle" class="text-xs text-slate-400 mt-1">Regístrate para acceder a la red de movilidad local</p>
+                <p id="auth-subtitle" class="text-xs text-slate-400 mt-1">RegÃ­strate para acceder a la red de movilidad local</p>
             </div>
 
             <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
                 <div>
                     <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Nombre Completo</label>
-                    <input type="text" id="reg-name" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none" placeholder="Ej. Juan Pérez">
+                    <input type="text" id="reg-name" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none" placeholder="Ej. Juan PÃ©rez">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Número de Teléfono</label>
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">NÃºmero de TelÃ©fono</label>
                     <div class="flex gap-2">
                         <span class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-slate-400 font-bold text-sm flex items-center">+56</span>
                         <input type="tel" id="reg-phone" required pattern="[0-9]{9}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none" placeholder="912345678">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">¿Cómo usarás la App?</label>
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Â¿CÃ³mo usarÃ¡s la App?</label>
                     <select id="reg-role" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold text-sm focus:border-emerald-500 outline-none">
                         <option value="passenger">Soy Pasajero</option>
                         <option value="driver">Soy Chofer de la Comuna</option>
@@ -103,11 +103,11 @@
                     <i class="fa-solid fa-clock text-2xl"></i>
                 </div>
                 <div class="space-y-1">
-                    <h3 class="text-lg font-black text-white">Cuenta Pendiente de Activación</h3>
-                    <p class="text-xs text-slate-400 px-4">Para activar tu cuenta o renovar tu cuota mensual de servicio, comunícate directamente con la administración del sistema.</p>
+                    <h3 class="text-lg font-black text-white">Cuenta Pendiente de ActivaciÃ³n</h3>
+                    <p class="text-xs text-slate-400 px-4">Para activar tu cuenta o renovar tu cuota mensual de servicio, comunÃ­cate directamente con la administraciÃ³n del sistema.</p>
                 </div>
                 <button onclick="checkAuthStatus(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
-                    <i class="fa-solid fa-rotate mr-1"></i> Ya realicé el pago, verificar ahora
+                    <i class="fa-solid fa-rotate mr-1"></i> Ya realicÃ© el pago, verificar ahora
                 </button>
             </div>
         </div>
@@ -137,33 +137,33 @@
             </div>
         </div>
 
-        <!-- SECCIÓN PASAJERO -->
+        <!-- SECCIÃ“N PASAJERO -->
         <main id="view-passenger" class="p-4 flex-1 flex flex-col gap-4">
             <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">¿Qué recorrido necesitas?</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Â¿QuÃ© recorrido necesitas?</label>
                 <select id="passenger-route-select" onchange="changeActiveRoute(this.value)" class="w-full bg-slate-900 border-2 border-slate-700 text-white p-3.5 rounded-xl font-bold focus:border-emerald-500 text-base"></select>
             </div>
 
-            <!-- Instrucción Interactiva del Mapa -->
+            <!-- InstrucciÃ³n Interactiva del Mapa -->
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex gap-3 items-center">
                 <div class="text-emerald-400 text-xl"><i class="fa-solid fa-hand-pointer animate-bounce"></i></div>
                 <p class="text-xs text-slate-300 leading-relaxed font-medium">
-                    <b class="text-emerald-400 block font-black">¡Marca tu punto exacto!</b>
-                    Toca cualquier parte del mapa arriba para indicarle al chofer exactamente dónde estás parado esperando la locomoción.
+                    <b class="text-emerald-400 block font-black">Â¡Marca tu punto exacto!</b>
+                    Toca cualquier parte del mapa arriba para indicarle al chofer exactamente dÃ³nde estÃ¡s parado esperando la locomociÃ³n.
                 </p>
             </div>
 
             <div id="passenger-status-card" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center hidden">
                 <p class="text-xs font-bold text-slate-400">Tu estado actual en esta ruta:</p>
-                <p id="passenger-status-text" class="text-base font-black text-emerald-400 mt-1">Esperando locomoción...</p>
+                <p id="passenger-status-text" class="text-base font-black text-emerald-400 mt-1">Esperando locomociÃ³n...</p>
                 <button onclick="cancelCustomStop()" class="mt-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold px-4 py-2 rounded-lg border border-red-500/20">Cancelar Alerta</button>
             </div>
         </main>
 
-        <!-- SECCIÓN CHOFER -->
+        <!-- SECCIÃ“N CHOFER -->
         <main id="view-driver" class="p-4 flex-1 flex flex-col gap-4 hidden">
             <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Línea que Conduces Hoy</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">LÃ­nea que Conduces Hoy</label>
                 <select id="driver-route-select" onchange="changeActiveRoute(this.value)" class="w-full bg-slate-900 border-2 border-slate-700 text-white p-3.5 rounded-xl font-bold focus:border-indigo-500 text-base"></select>
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -174,16 +174,16 @@
                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Pasajeros esperando en Ruta</h3>
                 <div id="driver-passengers-list" class="space-y-2 flex-1 overflow-y-auto max-h-48"></div>
             </div>
-            <button id="btn-gps-master" onclick="toggleGpsTransmission()" class="w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"><i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÓN GPS</button>
+            <button id="btn-gps-master" onclick="toggleGpsTransmission()" class="w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"><i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÃ“N GPS</button>
         </main>
     </div>
 
     <script>
-        // NOMBRES ACTUALIZADOS CON LAS LÍNEAS REALES DE MARÍA PINTO
+        // NOMBRES ACTUALIZADOS CON LAS LÃNEAS REALES DE MARÃA PINTO
         const routesData = {
             "buses-santiago": { name: "Buses: Bollenar - Santiago", color: "#ef4444", center: [-33.5234, -71.1168] },
             "liebres-melipilla": { name: "Liebre: Los Rulos - Melipilla", color: "#f59e0b", center: [-33.5510, -71.1620] },
-            "colectivo-linea-1": { name: "Colectivo L1: Lolenco - María Pinto", color: "#10b981", center: [-33.5234, -71.1168] },
+            "colectivo-linea-1": { name: "Colectivo L1: Lolenco - MarÃ­a Pinto", color: "#10b981", center: [-33.5234, -71.1168] },
             "colectivo-linea-2": { name: "Colectivo L2: Melipilla - Los Rulos", color: "#6366f1", center: [-33.5110, -71.0950] }
         };
 
@@ -304,7 +304,7 @@
                 timestamp: Date.now()
             }).then(() => {
                 document.getElementById('passenger-status-card').classList.remove('hidden');
-                document.getElementById('passenger-status-text').textContent = "Ubicación enviada. ¡El chofer puede ver tu punto exacto!";
+                document.getElementById('passenger-status-text').textContent = "UbicaciÃ³n enviada. Â¡El chofer puede ver tu punto exacto!";
             });
         }
 
@@ -382,7 +382,7 @@
         function toggleGpsTransmission() {
             const btn = document.getElementById('btn-gps-master');
             if (watchGpsId === null) {
-                btn.className = "w-full bg-red-600 text-white font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `DETENER TRANSMISIÓN GPS`;
+                btn.className = "w-full bg-red-600 text-white font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `DETENER TRANSMISIÃ“N GPS`;
                 watchGpsId = navigator.geolocation.watchPosition((position) => {
                     const lat = position.coords.latitude; const lng = position.coords.longitude;
                     vehicleMarker.setLatLng([lat, lng]);
@@ -390,7 +390,7 @@
                 }, (error) => console.error(error), { enableHighAccuracy: true });
             } else {
                 navigator.geolocation.clearWatch(watchGpsId); watchGpsId = null;
-                btn.className = "w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `<i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÓN GPS`;
+                btn.className = "w-full bg-emerald-500 text-slate-950 font-black py-4 rounded-xl text-base shadow-xl"; btn.innerHTML = `<i class="fa-solid fa-tower-broadcast mr-1"></i> TRANSMITIR MI UBICACIÃ“N GPS`;
             }
         }
 
