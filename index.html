@@ -70,7 +70,7 @@
         .btn-mp { background: #009ee3; font-size: 14px; margin-top: 5px; padding: 10px; font-weight: 600; opacity: 0.85; }
         
         /* Visualizador de Foto Vehículo */
-        .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); display: none; }
+        .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); display: none; }
         
         /* Contador Choferes */
         .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
@@ -78,21 +78,18 @@
         .count-display { font-size: 42px; font-weight: 800; color: white; }
         
         /* Tablas de Horarios */
-        .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
-        .sub-btn { flex: 1; padding: 8px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
+        .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+        .sub-btn { flex: 1; min-width: 100px; padding: 10px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
         .sub-btn.active { background: var(--blue-accent); color: white; border-color: var(--blue-accent); }
         
-        .table-container { display: none; max-height: 360px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
+        .table-container { display: none; max-height: 380px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
         .table-container.active { display: block; }
         
         table { width: 100%; border-collapse: collapse; font-size: 12px; background: #0f172a; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; vertical-align: top; }
         th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.1); font-size: 11px; text-transform: uppercase; }
-        .tag-route { display: block; margin-top: 4px; font-size: 10px; color: #94a3b8; font-style: italic; line-height: 1.2; }
         .route-section-title { font-weight: bold; color: #3b82f6; font-size: 11px; display: block; margin-bottom: 4px; }
-        
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-4px); } 100% { transform: translateY(0px); } }
+        .freq-badge { background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -159,7 +156,6 @@
             <textarea id="msg-pasajero" rows="2" placeholder="Nota para el chofer o destino solicitado..."></textarea>
             
             <div class="premium-blur-zone">
-                <!-- Capa de bloqueo -->
                 <div class="premium-overlay" id="premium-lock">
                     <span style="font-size: 26px; margin-bottom: 4px;">👑</span>
                     <div style="font-weight: 800; font-size: 15px; color: white;">RASTREADOR PREMIUM EN VIVO</div>
@@ -170,7 +166,6 @@
                     <button onclick="ingresarCodigoManual()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top:5px;">[Tengo un código de activación]</button>
                 </div>
 
-                <!-- El Mapa GPS -->
                 <div class="map-container">
                     <div class="map-content">
                         <span class="map-icon">🛰️</span>
@@ -181,7 +176,6 @@
                     </div>
                 </div>
 
-                <!-- CONTROLES PREMIUM EXCLUSIVOS -->
                 <div id="controles-premium-activos" style="display: none; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
                     <label style="color: #f59e0b; font-size: 12px; font-weight: bold; margin-bottom: 8px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD:</label>
                     <select id="premium-distancia-alarma" style="margin-bottom: 8px; padding: 8px; font-size: 13px;">
@@ -244,23 +238,60 @@
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
         </div>
 
-        <!-- PANEL 4: HORARIOS ACERCAMIENTO MUNICIPAL -->
+        <!-- PANEL 4: HORARIOS GENERALES -->
         <div id="panel-horarios" class="panel">
-            <div style="text-align: center; margin-bottom: 12px;">
-                <span style="font-size: 11px; font-weight: 800; background: #0f766e; color: #2dd4bf; padding: 4px 10px; border-radius: 12px; text-transform: uppercase;">🚌 Buses de Acercamiento Municipal Gratuitos</span>
-            </div>
-            
             <div class="sub-tabs">
-                <button class="sub-btn active" id="sbtn-bus1" onclick="switchSubTab('bus1')">Bus 1: Lo Ovalle</button>
-                <button class="sub-btn" id="sbtn-bus2" onclick="switchSubTab('bus2')">Bus 2: La Palma</button>
+                <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Santiago / Interurbanos</button>
+                <button class="sub-btn" id="sbtn-bus1" onclick="switchSubTab('bus1')">🚌 Muni 1: Lo Ovalle</button>
+                <button class="sub-btn" id="sbtn-bus2" onclick="switchSubTab('bus2')">🚌 Muni 2: La Palma</button>
             </div>
 
-            <!-- BUS 1: LO OVALLE / CHOROMBO -->
-            <div id="tab-bus1" class="table-container active">
+            <!-- RECORRIDOS SANTIAGO E INTERURBANOS -->
+            <div id="tab-santiago" class="table-container active">
                 <table>
                     <thead>
                         <tr>
-                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Ranchillo Int. - Lo Ovalle - Isla de Rojas - Cancha de Piedra - Parrón - Ranchillo Afuera - M. Pinto</span></th>
+                            <th>Servicio / Línea</th>
+                            <th>Ruta Principal</th>
+                            <th>Horarios / Frecuencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="route-section-title">Buses Bollenar</span></td>
+                            <td>Bollenar - San José - Santiago (Estación Central)</td>
+                            <td><span class="freq-badge">Cada 20-30 min</span><br><small style="color:var(--text-muted)">Servicio Regular Directo</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Buses Melipilla</span></td>
+                            <td>María Pinto - Melipilla - Estación Central (Santiago)</td>
+                            <td><span class="freq-badge">Cada 15-20 min</span><br><small style="color:var(--text-muted)">Desde las 06:00 hrs</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Liebres Los Rulos</span></td>
+                            <td>Los Rulos - Chorombo - Bollenar - Melipilla</td>
+                            <td><span class="freq-badge">Horarios Punta</span><br><small style="color:var(--text-muted)">Mañana y Tarde continuo</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Ruta Curacaví</span></td>
+                            <td>María Pinto - Cruce Chorombo - Curacaví - Santiago</td>
+                            <td><span class="freq-badge">Cada 30 min</span><br><small style="color:var(--text-muted)">Horario Valle y Punta</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Colectivos L2</span></td>
+                            <td>Los Rulos - Chorombo - Melipilla</td>
+                            <td>Frecuente mañana y tarde</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BUS 1: LO OVALLE / CHOROMBO -->
+            <div id="tab-bus1" class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Ranchillo Int. - Lo Ovalle - Isla de Rojas - Cancha de Piedra - Parrón - Ranchillo Afuera</span></th>
                             <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: El Redil - El Bosque - Malalhue - Las Mercedes - Cruce Chorombo Alto</span></th>
                             <th>Salida: Cruce Chorombo<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Las Mercedes - Malalhue - El Bosque - El Redil - María Pinto</span></th>
                         </tr>
@@ -296,7 +327,7 @@
             </div>
             
             <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 8px; font-style: italic;">
-                * Horarios oficiales provistos por la Ilustre Municipalidad de María Pinto.
+                * Revise las pestañas superiores para alternar entre recorridos interurbanos y municipales gratuitos.
             </p>
         </div>
 
