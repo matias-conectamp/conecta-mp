@@ -14,6 +14,8 @@
             --text-muted: #94a3b8;
             --time-bg: #1e293b;
             --time-text: #38bdf8;
+            --interurban-text: #34d399;
+            --interurban-bg: #064e3b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: var(--bg-main); color: var(--primary-light); padding: 12px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
@@ -23,7 +25,6 @@
         .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; }
         .brand-title { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* Sistema de pestañas principales */
         .tabs { display: flex; gap: 4px; background: #0f172a; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 13px; }
         .tab-btn.active { background: var(--blue-accent); color: white; }
@@ -31,25 +32,28 @@
         .panel { display: none; }
         .panel.active { display: block; }
 
-        /* Tarjetas de Servicio de Horarios */
+        /* Tarjetas de Servicio */
         .service-card { background: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .service-title { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
         .service-route { font-size: 13px; color: #a1a1aa; font-weight: 500; margin-bottom: 12px; line-height: 1.4; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
         
-        /* Contenedores de Bloques de Horarios */
+        /* Bloques de Horarios */
         .time-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; }
         .time-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .time-tag { background: var(--time-bg); color: var(--time-text); font-size: 15px; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); }
-        .frequency-tag { display: inline-block; background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        /* Horarios Municipales (Azul) */
+        .time-tag { background: var(--time-bg); color: var(--time-text); font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); }
+        
+        /* Horarios Interurbanos (Verde) */
+        .time-tag-interurban { background: var(--interurban-bg); color: var(--interurban-text); font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.2); }
 
-        /* Estilos del Panel Administrador Oculto */
+        /* Panel Administrador Oculto */
         #admin-panel { display: none; background: #0f172a; border-radius: 14px; padding: 16px; border: 1px solid #ef4444; margin-top: 15px; }
         .admin-input-group { margin-bottom: 12px; }
         label { font-size: 12px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); background-color: #1e293b; color: white; font-size: 14px; }
+        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); background-color: #1e293b; color: white; font-size: 14px; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 8px; text-align: center; color: white; display: block; text-decoration: none; }
         .btn-blue { background: var(--blue-accent); }
-        .btn-red { background: #ef4444; }
         .btn-outline { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); }
     </style>
 </head>
@@ -61,37 +65,118 @@
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
-    <!-- PESTAÑAS DE NAVEGACIÓN PRINCIPAL -->
     <div class="tabs">
         <button class="tab-btn active" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios de Buses</button>
         <button class="tab-btn" id="btn-tab-funciones" onclick="switchTab('funciones')">📱 Servicios</button>
     </div>
 
-    <!-- PANEL 1: HORARIOS GENERALES (VISTA LIMPIA Y CRÍTICA) -->
+    <!-- PANEL PRINCIPAL DE HORARIOS POR HORA -->
     <div id="panel-horarios" class="panel active">
         
         <!-- BUSES BOLLENAR -->
-        <div class="service-card">
-            <div class="service-title">🚍 Buses Bollenar</div>
+        <div class="service-card" style="border-left: 3px solid #10b981;">
+            <div class="service-title" style="color: #34d399;">🚍 Buses Bollenar</div>
             <div class="service-route">Ruta: Bollenar ➔ San José ➔ Santiago (Estación Central)</div>
-            <div class="time-section-label">Frecuencia del Servicio:</div>
-            <div class="frequency-tag">Cada 20 - 30 minutos continuo</div>
+            
+            <div class="time-section-label">Horarios aproximados de paso por María Pinto (Mañana):</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">06:15</span>
+                <span class="time-tag-interurban">06:40</span>
+                <span class="time-tag-interurban">07:00</span>
+                <span class="time-tag-interurban">07:20</span>
+                <span class="time-tag-interurban">07:45</span>
+                <span class="time-tag-interurban">08:15</span>
+                <span class="time-tag-interurban">08:45</span>
+                <span class="time-tag-interurban">09:15</span>
+                <span class="time-tag-interurban">09:45</span>
+                <span class="time-tag-interurban">10:15</span>
+                <span class="time-tag-interurban">11:15</span>
+                <span class="time-tag-interurban">12:15</span>
+            </div>
+
+            <div class="time-section-label">Horarios de paso (Tarde / Regreso):</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">13:15</span>
+                <span class="time-tag-interurban">14:15</span>
+                <span class="time-tag-interurban">15:15</span>
+                <span class="time-tag-interurban">16:00</span>
+                <span class="time-tag-interurban">16:30</span>
+                <span class="time-tag-interurban">17:00</span>
+                <span class="time-tag-interurban">17:30</span>
+                <span class="time-tag-interurban">18:00</span>
+                <span class="time-tag-interurban">18:40</span>
+                <span class="time-tag-interurban">19:20</span>
+                <span class="time-tag-interurban">20:10</span>
+                <span class="time-tag-interurban">21:00</span>
+            </div>
         </div>
 
         <!-- BUSES MELIPILLA -->
-        <div class="service-card">
-            <div class="service-title">🚍 Buses Melipilla</div>
+        <div class="service-card" style="border-left: 3px solid #10b981;">
+            <div class="service-title" style="color: #34d399;">🚍 Buses Melipilla</div>
             <div class="service-route">Ruta: María Pinto ➔ Melipilla ➔ Santiago (Estación Central)</div>
-            <div class="time-section-label">Frecuencia del Servicio:</div>
-            <div class="frequency-tag">Cada 15 - 20 minutos (Desde las 06:00 hrs)</div>
+            
+            <div class="time-section-label">Salidas estimadas (Bloque Mañana):</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">06:00</span>
+                <span class="time-tag-interurban">06:20</span>
+                <span class="time-tag-interurban">06:40</span>
+                <span class="time-tag-interurban">07:00</span>
+                <span class="time-tag-interurban">07:15</span>
+                <span class="time-tag-interurban">07:30</span>
+                <span class="time-tag-interurban">07:50</span>
+                <span class="time-tag-interurban">08:10</span>
+                <span class="time-tag-interurban">08:30</span>
+                <span class="time-tag-interurban">09:00</span>
+                <span class="time-tag-interurban">09:30</span>
+                <span class="time-tag-interurban">10:00</span>
+                <span class="time-tag-interurban">11:00</span>
+                <span class="time-tag-interurban">12:00</span>
+            </div>
+
+            <div class="time-section-label">Salidas estimadas (Bloque Tarde):</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">13:00</span>
+                <span class="time-tag-interurban">14:00</span>
+                <span class="time-tag-interurban">15:00</span>
+                <span class="time-tag-interurban">15:40</span>
+                <span class="time-tag-interurban">16:10</span>
+                <span class="time-tag-interurban">16:40</span>
+                <span class="time-tag-interurban">17:10</span>
+                <span class="time-tag-interurban">17:40</span>
+                <span class="time-tag-interurban">18:10</span>
+                <span class="time-tag-interurban">18:45</span>
+                <span class="time-tag-interurban">19:30</span>
+                <span class="time-tag-interurban">20:30</span>
+            </div>
         </div>
 
         <!-- LIEBRES LOS RULOS / COLECTIVOS L2 -->
-        <div class="service-card">
-            <div class="service-title">🚗 Liebres Los Rulos / Colectivos L2</div>
+        <div class="service-card" style="border-left: 3px solid #10b981;">
+            <div class="service-title" style="color: #34d399;">🚗 Liebres Los Rulos / Colectivos</div>
             <div class="service-route">Ruta: Los Rulos ➔ Chorombo ➔ Bollenar ➔ Melipilla</div>
-            <div class="time-section-label">Disponibilidad en Ruta:</div>
-            <div class="frequency-tag">Continuo durante Horarios Punta (Mañana y Tarde)</div>
+            
+            <div class="time-section-label">Salidas Horario Punta Mañana:</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">06:30</span>
+                <span class="time-tag-interurban">07:00</span>
+                <span class="time-tag-interurban">07:20</span>
+                <span class="time-tag-interurban">07:40</span>
+                <span class="time-tag-interurban">08:10</span>
+                <span class="time-tag-interurban">08:40</span>
+                <span class="time-tag-interurban">09:15</span>
+            </div>
+
+            <div class="time-section-label">Salidas Horario Punta Tarde:</div>
+            <div class="time-grid">
+                <span class="time-tag-interurban">16:15</span>
+                <span class="time-tag-interurban">16:45</span>
+                <span class="time-tag-interurban">17:15</span>
+                <span class="time-tag-interurban">17:45</span>
+                <span class="time-tag-interurban">18:15</span>
+                <span class="time-tag-interurban">18:45</span>
+                <span class="time-tag-interurban">19:30</span>
+            </div>
         </div>
 
         <!-- BUS MUNICIPAL 1: LO OVALLE -->
@@ -152,18 +237,16 @@
         </div>
     </div>
 
-    <!-- PANEL 2: COMPLEMENTOS DE LA APP (OCULTOS POR DEFECTO) -->
+    <!-- PANEL SERVICIOS COMPLEMENTARIOS -->
     <div id="panel-funciones" class="panel">
         <p style="font-size:14px; color:var(--text-muted); margin-bottom:15px; text-align:center;">Herramientas adicionales de reporte y GPS.</p>
         <button class="btn btn-blue" onclick="alert('Ubicación de ruta compartida.')">📍 Compartir mi Ubicación en Ruta</button>
         <button class="btn btn-outline" style="margin-top:10px;" onclick="alert('Función de reporte vial.')">⚠️ Informar Incidente Vial</button>
     </div>
 
-    <!-- PANEL DE ADMINISTRADOR MAESTRO TOTAL -->
+    <!-- CONTROL ADMINISTRADOR OCULTO -->
     <div id="admin-panel">
         <h3 style="color:#ef4444; text-align:center; margin-bottom:12px;">🛠️ Control del Administrador</h3>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; text-align:center;">Acceso completo al motor interno de la plataforma.</p>
-        
         <div class="admin-input-group">
             <label>Código de Activación Manual:</label>
             <input type="text" id="admin-custom-code" value="MP2026">
@@ -185,9 +268,9 @@
     }
 
     function solicitarAccesoAdmin() {
-        const pass = prompt("🔐 Introduce la clave de Administrador para abrir el gestor:");
+        const pass = prompt("🔐 Introduce la clave de Administrador:");
         if (pass === "ADMIN2026") {
-            document.getElementById('admin-panel').style.style.display = 'block';
+            document.getElementById('admin-panel').style.display = 'block';
             document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
         } else {
             alert("Acceso denegado.");
@@ -201,7 +284,7 @@
     function guardarConfiguracionAdmin() {
         const codigo = document.getElementById('admin-custom-code').value;
         localStorage.setItem('conecta_mp_custom_code', codigo);
-        alert("Configuración de administración salvada con éxito.");
+        alert("Configuración guardada.");
         cerrarAdminVisual();
     }
 </script>
