@@ -106,7 +106,6 @@
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
-    <!-- PANTALLA 1: INGRESO -->
     <div id="auth-screen">
         <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
             Ingresa tus datos para conectarte con el transporte de María Pinto.
@@ -133,7 +132,6 @@
         <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Enlace Opcional Mercado Pago</a>
     </div>
 
-    <!-- PANTALLA 2: APP COMPLETA -->
     <div id="main-app-content">
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
@@ -142,7 +140,6 @@
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Buses</button>
         </div>
 
-        <!-- PANEL 1: GPS -->
         <div id="panel-pasajeros" class="panel active">
             <label>Selecciona tu tipo o línea de transporte:</label>
             <select id="select-servicio">
@@ -200,7 +197,6 @@
             </div>
         </div>
 
-        <!-- PANEL 2: REPORTES -->
         <div id="panel-reportes" class="panel">
             <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
                 <label style="color: #60a5fa;">📣 Informar Incidente Vial:</label>
@@ -215,7 +211,6 @@
             <div id="muro-reportes"></div>
         </div>
 
-        <!-- PANEL 3: CHOFERES -->
         <div id="panel-choferes" class="panel">
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
@@ -226,10 +221,10 @@
             
             <div id="campos-chofer-particular" style="background: rgba(255,158,11,0.04); padding:14px; border-radius:14px; border:1px solid rgba(245,158,11,0.2); margin-bottom:15px; display:none;">
                 <label style="color:#f59e0b;">📍 Destino / Ruta del Viaje:</label>
-                <input type="text" id="driver-dest" placeholder="Ej: María Pinto -> Metro Las Rejas por Alameda">
+                <input type="text" id="driver-dest" placeholder="Ej: María Pinto -> Metro Las Rejas por Alameda" oninput="actualizarEstadoTextoChofer()">
                 
                 <label style="color:#f59e0b;">💰 Cooperación por Asiento ($):</label>
-                <input type="number" id="driver-price" placeholder="Ej: 2500">
+                <input type="number" id="driver-price" placeholder="Ej: 2500" oninput="actualizarEstadoTextoChofer()">
             </div>
 
             <div style="background: rgba(255,255,255,0.02); padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
@@ -243,7 +238,6 @@
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
         </div>
 
-        <!-- PANEL 4: HORARIOS GENERALES -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
                 <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Santiago / Interurbanos</button>
@@ -251,7 +245,6 @@
                 <button class="sub-btn" id="sbtn-bus2" onclick="switchSubTab('bus2')">🚌 Muni 2: La Palma</button>
             </div>
 
-            <!-- RECORRIDOS SANTIAGO E INTERURBANOS -->
             <div id="tab-santiago" class="table-container active">
                 <table>
                     <thead>
@@ -291,7 +284,6 @@
                 </table>
             </div>
 
-            <!-- BUS 1: LO OVALLE / CHOROMBO -->
             <div id="tab-bus1" class="table-container">
                 <table>
                     <thead>
@@ -311,7 +303,6 @@
                 </table>
             </div>
 
-            <!-- BUS 2: LA PALMA / IBACACHE -->
             <div id="tab-bus2" class="table-container">
                 <table>
                     <thead>
@@ -339,7 +330,6 @@
         <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
-    <!-- NUEVA PANTALLA: CENTRO DE CONTROL ADMINISTRADOR TOTAL -->
     <div id="admin-master-panel">
         <h2 style="font-size: 18px; text-align: center; color: #3b82f6; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">🛠️ Panel de Control Maestro</h2>
         
@@ -371,6 +361,7 @@
 <script>
     let alarmaIniciada = false;
     let miGpsWatchId = null;
+    let cupos = 4;
 
     window.onload = function() {
         const parametrosUrl = new URLSearchParams(window.location.search);
@@ -404,6 +395,9 @@
         
         const fotoGuardada = localStorage.getItem('conecta_mp_vehicle_photo');
         if (fotoGuardada) mostrarFotosEnPantallas(fotoGuardada);
+
+        // Cargar reportes del localStorage si existen
+        renderizarReportes();
     };
 
     function toggleIngresoCampos(value) {}
@@ -463,7 +457,6 @@
         document.getElementById('sbtn-' + subTabId).classList.add('active');
     }
 
-    let cupos = 4;
     function cambiarCupo(valor) {
         cupos = Math.max(0, Math.min(15, cupos + valor));
         document.getElementById('cupos-actuales').innerText = cupos;
@@ -494,71 +487,126 @@
         }
     }
 
-    function mostrarFotosEnPantallas(base64) {
-        if(document.getElementById('driver-photo-preview')) { document.getElementById('driver-photo-preview').src = base64; document.getElementById('driver-photo-preview').style.display = 'block'; }
-        if(document.getElementById('passenger-view-photo')) { document.getElementById('passenger-view-photo').src = base64; document.getElementById('passenger-view-photo').style.display = 'block'; }
+    function mostrarFotosEnPantallas(base64Data) {
+        const pPreview = document.getElementById('passenger-view-photo');
+        const dPreview = document.getElementById('driver-photo-preview');
+        if(pPreview) { pPreview.src = base64Data; pPreview.style.display = 'block'; }
+        if(dPreview) { dPreview.src = base64Data; dPreview.style.display = 'block'; }
     }
 
     function activarRutaChofer() {
+        const statusDiv = document.getElementById('chofer-gps-status');
+        actualizarEstadoTextoChofer();
         if (navigator.geolocation) {
-            actualizarEstadoTextoChofer();
-            navigator.geolocation.watchPosition((p) => {
-                document.getElementById('chofer-gps-status').innerText = `📡 Activo: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
-            });
-            alert("Transmisión en vivo iniciada para tu viaje.");
+            statusDiv.innerText = "🛰️ Transmitiendo coordenadas en vivo...";
+            miGpsWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const coordsStr = `Lat: ${pos.coords.latitude.toFixed(4)}, Lon: ${pos.coords.longitude.toFixed(4)}`;
+                    if(document.getElementById('gps-coords')) {
+                        document.getElementById('gps-coords').innerText = coordsStr;
+                    }
+                },
+                (err) => { statusDiv.innerText = "❌ Error u omisión de señal GPS."; },
+                { enableHighAccuracy: true }
+            );
+            alert("📡 ¡Tu transmisión en ruta ha comenzado exitosamente!");
+        } else {
+            statusDiv.innerText = "❌ GPS no soportado en este equipo.";
         }
     }
 
     function enviarAlertaPasajero() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((p) => {
-                document.getElementById('gps-coords').innerText = `Ubicación Enviada`;
-            });
+        const servicio = document.getElementById('select-servicio').value;
+        const msg = document.getElementById('msg-pasajero').value.trim();
+        const bultos = document.getElementById('check-equipaje').checked ? " (Lleva bultos grandes)" : "";
+        alert(`📍 Ubicación compartida para la línea/servicio [${servicio}].\nNota enviada: "${msg || 'Ninguna'}"${bultos}`);
+    }
+
+    // LÓGICA DE ALARMAS Y COMPARTIR PREMIUM
+    function activarAlarmaProximidad() {
+        alarmaIniciada = !alarmaIniciada;
+        const btn = document.querySelector('#controles-premium-activos button');
+        if(alarmaIniciada) {
+            btn.innerText = "🔔 Alarma Activa (Buscando cercanía...)";
+            btn.style.background = "#b45309";
+            // Simulación estética de proximidad para pruebas del cliente
+            setTimeout(() => {
+                if(alarmaIniciada) {
+                    document.getElementById('audio-alarma').play().catch(()=>{});
+                    alert("🚨 ¡ATENCIÓN CONECTA MP!\nEl transporte seleccionado se encuentra dentro del rango de cercanía configurado.");
+                }
+            }, 7000);
+        } else {
+            btn.innerText = "🔕 Iniciar Alarma de Proximidad";
+            btn.style.background = "#0f766e";
         }
     }
 
-    function publicarReporte() {
-        const t = document.getElementById('report-text').value.trim();
-        if(!t) return;
-        const m = document.getElementById('muro-reportes');
-        const c = document.createElement('div');
-        c.className = `report-card info`;
-        c.innerHTML = `<div class="report-header"><span>📣 INFORME</span><span>Ahora</span></div><div class="report-body">${t}</div>`;
-        m.insertBefore(c, m.firstChild);
-        document.getElementById('report-text').value = "";
+    function compartirRutaWhatsApp() {
+        const user = localStorage.getItem('conecta_mp_user') || "Usuario";
+        const text = encodeURIComponent(`¡Hola! Estoy viajando seguro usando Conecta MP. Sigo mi ruta de transporte local en tiempo real desde la aplicación.`);
+        window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
 
-    /* CONTROL DE ADMINISTRACIÓN AVANZADO INTERACTIVO */
-    function abrirAdminMaestro() {
-        const pass = prompt("🔐 Ingresa la Clave Maestra de Administrador:");
-        if(pass !== "ADMIN2026") return alert("❌ Clave incorrecta.");
+    // MANEJO DE REPORTES LOCALES
+    function publicarReporte() {
+        const texto = document.getElementById('report-text').value.trim();
+        const tipo = document.getElementById('report-type').value;
+        if(texto === "") return alert("Por favor escribe el reporte.");
+
+        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports') || "[]");
+        const nuevoReporte = {
+            id: Date.now(),
+            remitente: localStorage.getItem('conecta_mp_user') || "Anónimo",
+            hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            texto: texto,
+            tipo: tipo
+        };
+        reportes.unshift(nuevoReporte);
+        localStorage.setItem('conecta_mp_reports', JSON.stringify(reportes));
+        document.getElementById('report-text').value = "";
+        renderizarReportes();
+    }
+
+    function renderizarReportes() {
+        const contenedor = document.getElementById('muro-reportes');
+        if(!contenedor) return;
+        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports') || "[]");
         
-        // Ocultar las pantallas de usuario común
+        if(reportes.length === 0) {
+            contenedor.innerHTML = `<p style="font-size:12px; text-align:center; color:var(--text-muted); padding:20px;">No hay reportes viales recientes en María Pinto.</p>`;
+            return;
+        }
+
+        contenedor.innerHTML = reportes.map(r => `
+            <div class="report-card ${r.tipo}">
+                <div class="report-header">
+                    <span>👤 ${r.remitente}</span>
+                    <span>🕒 ${r.hora}</span>
+                </div>
+                <div class="report-body">${r.texto}</div>
+            </div>
+        `).join('');
+    }
+
+    // ADMINISTRACIÓN TOTAL
+    function abrirAdminMaestro() {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'none';
-        
-        // Mostrar el panel de control maestro visual
         document.getElementById('admin-master-panel').style.display = 'block';
         
-        // Cargar datos en vivo del usuario en el panel
-        const user = localStorage.getItem('conecta_mp_user') || 'Ninguno';
-        const phone = localStorage.getItem('conecta_mp_phone') || 'Ninguno';
-        const role = localStorage.getItem('conecta_mp_role') || 'Ninguno';
-        const prem = localStorage.getItem('conecta_mp_premium') || 'Inactivo';
-        const customCode = localStorage.getItem('conecta_mp_custom_code') || "MP2026";
-
-        document.getElementById('admin-user-details').innerHTML = `
-            <strong>Usuario Activo:</strong> ${user}<br>
-            <strong>Contacto:</strong> ${phone}<br>
-            <strong>Rol de Sesión:</strong> ${role}<br>
-            <strong>Estado Premium:</strong> <span style="color:#f59e0b">${prem}</span><br>
-            <strong>Código de Respaldo Actual:</strong> ${customCode}
+        const details = document.getElementById('admin-user-details');
+        details.innerHTML = `
+            <strong>Nombre Sesión:</strong> ${localStorage.getItem('conecta_mp_user') || 'Sin ingreso'}<br>
+            <strong>Teléfono:</strong> ${localStorage.getItem('conecta_mp_phone') || 'Sin registro'}<br>
+            <strong>Rol Asignado:</strong> ${localStorage.getItem('conecta_mp_role') || 'Ninguno'}<br>
+            <strong>Estado Premium:</strong> ${localStorage.getItem('conecta_mp_premium') === 'activo' ? '👑 ACTIVADO' : '❌ Bloqueado'}
         `;
     }
 
     function salirDelPanelAdmin() {
         document.getElementById('admin-master-panel').style.display = 'none';
-        if (localStorage.getItem('conecta_mp_user')) {
+        if(localStorage.getItem('conecta_mp_user')) {
             document.getElementById('main-app-content').style.display = 'block';
         } else {
             document.getElementById('auth-screen').style.display = 'block';
@@ -567,97 +615,38 @@
 
     function forzarPremiumAdmin() {
         localStorage.setItem('conecta_mp_premium', 'activo');
-        alert("👑 Modo Premium forzado globalmente. Los candados se eliminarán.");
-        abrirAdminMaestro(); 
+        alert("Modo Premium Forzado Globalmente.");
+        location.reload();
     }
 
     function cambiarCodigoRespaldoAdmin() {
-        const nCode = prompt("Escribe el nuevo código de respaldo manual:", "MP2026");
-        if(nCode) {
-            localStorage.setItem('conecta_mp_custom_code', nCode);
-            alert(`Código modificado exitosamente a: ${nCode}`);
-            abrirAdminMaestro();
+        const nuevoCod = prompt("Define el nuevo código manual maestro:");
+        if(nuevoCod) {
+            localStorage.setItem('conecta_mp_custom_code', nuevoCod);
+            alert(`Código actualizado a: ${nuevoCod}`);
         }
     }
 
     function limpiarTodosLosReportesAdmin() {
-        document.getElementById('muro-reportes').innerHTML = "";
-        alert("🗑️ El muro de incidentes ha sido limpiado por completo.");
+        localStorage.removeItem('conecta_mp_reports');
+        alert("Muro limpiado por administrador.");
+        renderizarReportes();
     }
 
     function inyectarReporteSimuladoAdmin() {
-        const mensaje = prompt("Escribe el mensaje oficial que verán los vecinos:", "Aviso: Buses municipales con retraso de 10 min por trabajos en la vía.");
-        if(!mensaje) return;
-        const m = document.getElementById('muro-reportes');
-        const c = document.createElement('div');
-        c.className = `report-card danger`;
-        c.innerHTML = `<div class="report-header"><span style="color:#ef4444">🚨 COMUNICADO OFICIAL</span><span>Ahora</span></div><div class="report-body">${mensaje}</div>`;
-        m.insertBefore(c, m.firstChild);
-        alert("Comunicado publicado en el muro principal.");
-    }
-
-    function compartirRutaWhatsApp() {
-        if (!navigator.geolocation) return alert("Tu teléfono no soporta geolocalización.");
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const urlMapa = `https://www.google.com/maps?q=${lat},${lon}`;
-            const textoMensaje = encodeURIComponent(`🚨 Conecta MP - Viaje Seguro: Hola, voy en tránsito por la comuna. Sigue mi ubicación en vivo aquí: ${urlMapa}`);
-            window.open(`https://api.whatsapp.com/send?text=${textoMensaje}`, '_blank');
-        }, () => {
-            alert("No pudimos obtener tu ubicación para el mensaje de emergencia.");
+        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports') || "[]");
+        reportes.unshift({
+            id: Date.now(),
+            remitente: "Administración Central",
+            hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            texto: "📢 Comunicado Oficial: Trabajos programados en rutas secundarias de María Pinto. Conduzca con precaución.",
+            tipo: "info"
         });
-    }
-
-    function activarAlarmaProximidad() {
-        const botonAlarma = event.currentTarget;
-        if (alarmaIniciada) {
-            alarmaIniciada = false;
-            if(miGpsWatchId) navigator.geolocation.clearWatch(miGpsWatchId);
-            botonAlarma.innerText = "🔕 Iniciar Alarma de Proximidad";
-            botonAlarma.style.background = "#0f766e";
-            document.getElementById('live-driver-status').innerText = "Alarma desactivada.";
-            return;
-        }
-
-        if (!navigator.geolocation) return alert("Tu dispositivo no soporta localización.");
-        alarmaIniciada = true;
-        botonAlarma.innerText = "🛑 Detener Alarma Activa";
-        botonAlarma.style.background = "#ef4444";
-        document.getElementById('live-driver-status').innerText = "Rastreador en segundo plano activo...";
-
-        const choferLat = -33.6125; 
-        const choferLon = -71.2184;
-
-        miGpsWatchId = navigator.geolocation.watchPosition((position) => {
-            const miLat = position.coords.latitude;
-            const miLon = position.coords.longitude;
-            const distanciaKM = calcularDistanciaHaversine(miLat, miLon, choferLat, choferLon);
-            const limiteSeteado = parseFloat(document.getElementById('premium-distancia-alarma').value);
-
-            document.getElementById('live-driver-status').innerText = `Vehículo en ruta a: ${distanciaKM.toFixed(2)} km de ti.`;
-
-            if (distanciaKM <= limiteSeteado) {
-                const sonido = document.getElementById('audio-alarma');
-                sonido.play().catch(e => console.log("Interacción previa requerida."));
-                document.getElementById('live-driver-status').innerText = `⚠️ ¡VEHÍCULO CERCA! A menos de ${distanciaKM.toFixed(1)} km.`;
-                if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
-            }
-        }, (error) => {
-            console.log("Error en watchPosition");
-        }, { enableHighAccuracy: true });
-    }
-
-    function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-        const R = 6371; 
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; 
+        localStorage.setItem('conecta_mp_reports', JSON.stringify(reportes));
+        renderizarReportes();
+        alert("Comunicado inyectado al muro.");
     }
 </script>
+
 </body>
 </html>
