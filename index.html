@@ -97,6 +97,10 @@
         .admin-box { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
         .admin-box h3 { font-size: 14px; color: #3b82f6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     </style>
+    
+    <!-- Vinculo al archivo manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
 </head>
 <body>
 
@@ -461,14 +465,26 @@
         renderizarReportes();
     };
 
-    function toggleIngresoCampos(value) {}
+    function toggleIngresoCampos(value) {
+        console.log("Rol seleccionado:", value);
+    }
 
     function ingresoForzado() {
-        const nombre = document.getElementById('auth-name').value.trim();
-        const telefono = document.getElementById('auth-phone').value.trim();
-        const rol = document.getElementById('auth-role').value;
+        const nombreInput = document.getElementById('auth-name');
+        const telefonoInput = document.getElementById('auth-phone');
+        const rolInput = document.getElementById('auth-role');
 
-        if (nombre === "" || telefono === "") return alert("⚠️ Rellena todos los campos.");
+        if (!nombreInput || !telefonoInput || !rolInput) {
+            return alert("⚠️ Error interno: No se encontraron los campos de texto.");
+        }
+
+        const nombre = nombreInput.value.trim();
+        const telefono = telefonoInput.value.trim();
+        const rol = rolInput.value;
+
+        if (nombre === "" || telefono === "") {
+            return alert("⚠️ Por favor, rellena todos los campos (Nombre y Teléfono).");
+        }
 
         localStorage.setItem('conecta_mp_user', nombre);
         localStorage.setItem('conecta_mp_phone', telefono);
@@ -637,7 +653,7 @@
         const tipo = document.getElementById('report-type').value;
         if(texto === "") return alert("Por favor escribe el reporte.");
 
-        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports'] || "[]");
+        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports') || "[]");
         const nuevoReporte = {
             id: Date.now(),
             remitente: localStorage.getItem('conecta_mp_user') || "Anónimo",
@@ -727,6 +743,12 @@
         localStorage.setItem('conecta_mp_reports', JSON.stringify(reportes));
         renderizarReportes();
         alert("Comunicado inyectado al muro.");
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('Servicio de App Activo'))
+          .catch(err => console.log('Error al activar:', err));
     }
 </script>
 
