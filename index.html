@@ -83,14 +83,15 @@
         .sub-btn { flex: 1; min-width: 100px; padding: 10px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
         .sub-btn.active { background: var(--blue-accent); color: white; border-color: var(--blue-accent); }
         
-        .table-container { display: none; max-height: 380px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
+        .table-container { display: none; max-height: 420px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
         .table-container.active { display: block; }
         
         table { width: 100%; border-collapse: collapse; font-size: 12px; background: #0f172a; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; vertical-align: top; }
         th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.1); font-size: 11px; text-transform: uppercase; }
-        .route-section-title { font-weight: bold; color: #3b82f6; font-size: 11px; display: block; margin-bottom: 4px; }
+        .route-section-title { font-weight: bold; color: #3b82f6; font-size: 12px; display: block; margin-bottom: 4px; }
         .freq-badge { background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .note-badge { background: #334155; color: #cbd5e1; padding: 2px 5px; border-radius: 4px; font-size: 9px; display: inline-block; margin-top: 2px; }
 
         /* Estilos del Panel Admin Visual */
         .admin-box { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
@@ -106,6 +107,7 @@
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
+    <!-- PANTALLA 1: INGRESO -->
     <div id="auth-screen">
         <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
             Ingresa tus datos para conectarte con el transporte de María Pinto.
@@ -132,6 +134,7 @@
         <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Enlace Opcional Mercado Pago</a>
     </div>
 
+    <!-- PANTALLA 2: APP COMPLETA -->
     <div id="main-app-content">
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
@@ -140,6 +143,7 @@
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Buses</button>
         </div>
 
+        <!-- PANEL 1: GPS -->
         <div id="panel-pasajeros" class="panel active">
             <label>Selecciona tu tipo o línea de transporte:</label>
             <select id="select-servicio">
@@ -197,6 +201,7 @@
             </div>
         </div>
 
+        <!-- PANEL 2: REPORTES -->
         <div id="panel-reportes" class="panel">
             <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
                 <label style="color: #60a5fa;">📣 Informar Incidente Vial:</label>
@@ -211,6 +216,7 @@
             <div id="muro-reportes"></div>
         </div>
 
+        <!-- PANEL 3: CHOFERES -->
         <div id="panel-choferes" class="panel">
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
@@ -238,52 +244,99 @@
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
         </div>
 
+        <!-- PANEL 4: HORARIOS GENERALES -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
-                <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Santiago / Interurbanos</button>
+                <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Interurbanos / Los Rulos</button>
                 <button class="sub-btn" id="sbtn-bus1" onclick="switchSubTab('bus1')">🚌 Muni 1: Lo Ovalle</button>
                 <button class="sub-btn" id="sbtn-bus2" onclick="switchSubTab('bus2')">🚌 Muni 2: La Palma</button>
             </div>
 
+            <!-- RECORRIDOS INTERURBANOS REALES -->
             <div id="tab-santiago" class="table-container active">
+                <!-- SECCIÓN 1: RECORRIDO LOS RULOS - MELIPILLA -->
+                <div style="padding: 10px; background: #1e293b; font-weight: bold; color: #f59e0b; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
+                    📢 RECORRIDO MARÍA PINTO - MELIPILLA (Línea Los Rulos / Bollenar)
+                </div>
+                <table style="margin-bottom: 15px;">
+                    <thead>
+                        <tr>
+                            <th>⏰ Desde Los Rulos</th>
+                            <th>⏰ Desde Melipilla</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>07:00</td><td>08:30</td></tr>
+                        <tr><td>09:30</td><td>11:30</td></tr>
+                        <tr><td>12:45</td><td>14:30</td></tr>
+                        <tr><td>15:30</td><td>17:00</td></tr>
+                    </tbody>
+                </table>
+
+                <!-- SECCIÓN 2: BUSES ORELLANA LUNES A VIERNES -->
+                <div style="padding: 10px; background: #1e293b; font-weight: bold; color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
+                    🚍 BUSES ORELLANA - LUNES A VIERNES
+                </div>
+                <table style="margin-bottom: 15px;">
+                    <thead>
+                        <tr>
+                            <th>➡️ BOLLENAR a SANTIAGO</th>
+                            <th>⬅️ SANTIAGO a BOLLENAR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>05:10 <span class="note-badge">Paradero 10</span></td><td>07:45</td></tr>
+                        <tr><td>05:20 <span class="note-badge">El Campesino</span></td><td>09:00</td></tr>
+                        <tr><td>05:20 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span></td><td>10:00</td></tr>
+                        <tr><td>05:45 <span class="note-badge">El Campesino</span></td><td>11:00</td></tr>
+                        <tr><td>06:30</td><td>12:00 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span></td></tr>
+                        <tr><td>07:00</td><td>13:30</td></tr>
+                        <tr><td>07:15 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span></td><td>14:30</td></tr>
+                        <tr><td>08:00</td><td>15:15</td></tr>
+                        <tr><td>09:00</td><td>16:00</td></tr>
+                        <tr><td>10:00</td><td>17:00</td></tr>
+                        <tr><td>11:00</td><td>17:30</td></tr>
+                        <tr><td>12:00</td><td>18:15 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span></td></tr>
+                        <tr><td>13:30</td><td>18:35</td></tr>
+                        <tr><td>14:30 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span></td><td>19:00</td></tr>
+                        <tr><td>15:30</td><td>19:30</td></tr>
+                        <tr><td>16:40</td><td>20:15</td></tr>
+                        <tr><td>18:00</td><td>-</td></tr>
+                    </tbody>
+                </table>
+
+                <!-- SECCIÓN 3: BUSES ORELLANA FIN DE SEMANA -->
+                <div style="padding: 10px; background: #1e293b; font-weight: bold; color: #34d399; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
+                    🗓️ BUSES ORELLANA - FIN DE SEMANA
+                </div>
                 <table>
                     <thead>
                         <tr>
-                            <th>Servicio / Línea</th>
-                            <th>Ruta Principal</th>
-                            <th>Horarios / Frecuencia</th>
+                            <th>🟠 SÁBADO</th>
+                            <th>🔴 DOMINGO</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="route-section-title">Buses Bollenar</span></td>
-                            <td>Bollenar - San José - Santiago (Estación Central)</td>
-                            <td><span class="freq-badge">Cada 20-30 min</span><br><small style="color:var(--text-muted)">Servicio Regular Directo</small></td>
-                        </tr>
-                        <tr>
-                            <td><span class="route-section-title">Buses Melipilla</span></td>
-                            <td>María Pinto - Melipilla - Estación Central (Santiago)</td>
-                            <td><span class="freq-badge">Cada 15-20 min</span><br><small style="color:var(--text-muted)">Desde las 06:00 hrs</small></td>
-                        </tr>
-                        <tr>
-                            <td><span class="route-section-title">Liebres Los Rulos</span></td>
-                            <td>Los Rulos - Chorombo - Bollenar - Melipilla</td>
-                            <td><span class="freq-badge">Horarios Punta</span><br><small style="color:var(--text-muted)">Mañana y Tarde continuo</small></td>
-                        </tr>
-                        <tr>
-                            <td><span class="route-section-title">Ruta Curacaví</span></td>
-                            <td>María Pinto - Cruce Chorombo - Curacaví - Santiago</td>
-                            <td><span class="freq-badge">Cada 30 min</span><br><small style="color:var(--text-muted)">Horario Valle y Punta</small></td>
-                        </tr>
-                        <tr>
-                            <td><span class="route-section-title">Colectivos L2</span></td>
-                            <td>Los Rulos - Chorombo - Melipilla</td>
-                            <td>Frecuente mañana y tarde</td>
+                            <td>
+                                <strong>Desde Bollenar:</strong><br>
+                                06:30 | 08:00 | 10:00 | 16:00<br><br>
+                                <strong>Desde Santiago:</strong><br>
+                                12:00 | 14:30 | 16:00 | 18:00
+                            </td>
+                            <td>
+                                <strong>Desde Bollenar:</strong><br>
+                                17:00<br>
+                                18:00 <span class="note-badge" style="background:#1e3a8a; color:#93c5fd">vía Ibacache</span><br><br>
+                                <strong>Desde Santiago:</strong><br>
+                                19:30 | 20:30
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
+            <!-- BUS 1: LO OVALLE / CHOROMBO -->
             <div id="tab-bus1" class="table-container">
                 <table>
                     <thead>
@@ -303,6 +356,7 @@
                 </table>
             </div>
 
+            <!-- BUS 2: LA PALMA / IBACACHE -->
             <div id="tab-bus2" class="table-container">
                 <table>
                     <thead>
@@ -330,6 +384,7 @@
         <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
+    <!-- PANTALLA: CENTRO DE CONTROL ADMINISTRADOR TOTAL -->
     <div id="admin-master-panel">
         <h2 style="font-size: 18px; text-align: center; color: #3b82f6; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">🛠️ Panel de Control Maestro</h2>
         
@@ -450,11 +505,17 @@
         if(document.getElementById('btn-tab-' + targetId)) document.getElementById('btn-tab-' + targetId).classList.add('active');
     }
 
+    // Cambiado para manejar scroll-top automático al cambiar sub-pestanas
     function switchSubTab(subTabId) {
         document.querySelectorAll('.table-container').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + subTabId).classList.add('active');
-        document.getElementById('sbtn-' + subTabId).classList.add('active');
+        
+        const targetContainer = document.getElementById('tab-' + subTabId);
+        if(targetContainer) {
+            targetContainer.classList.add('active');
+            targetContainer.scrollTop = 0; 
+        }
+        if(document.getElementById('sbtn-' + subTabId)) document.getElementById('sbtn-' + subTabId).classList.add('active');
     }
 
     function cambiarCupo(valor) {
@@ -529,7 +590,6 @@
         if(alarmaIniciada) {
             btn.innerText = "🔔 Alarma Activa (Buscando cercanía...)";
             btn.style.background = "#b45309";
-            // Simulación estética de proximidad para pruebas del cliente
             setTimeout(() => {
                 if(alarmaIniciada) {
                     document.getElementById('audio-alarma').play().catch(()=>{});
