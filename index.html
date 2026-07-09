@@ -123,6 +123,7 @@
         <select id="auth-role" onchange="toggleIngresoCampos(this.value)">
             <option value="pasajeros">📱 Pasajero / Vecino</option>
             <option value="choferes">🚗 Chofer de Colectivo o Liebre</option>
+            <option value="bollenar">🚍 Chofer Buses Bollenar - Santiago</option>
             <option value="particular">🚘 Chofer Auto Particular (Viaje Compartido)</option>
         </select>
 
@@ -147,6 +148,7 @@
         <div id="panel-pasajeros" class="panel active">
             <label>Selecciona tu tipo o línea de transporte:</label>
             <select id="select-servicio">
+                <option value="bollenar_stgo">🚍 Buses Bollenar - Santiago (Orellana)</option>
                 <option value="l1">Línea 1 Colectivos (Lolenco - María Pinto)</option>
                 <option value="l2">Línea 2 Colectivos (Los Rulos - Melipilla)</option>
                 <option value="l3">Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
@@ -218,6 +220,16 @@
 
         <!-- PANEL 3: CHOFERES -->
         <div id="panel-choferes" class="panel">
+            <label id="lbl-selector-servicio-chofer">Selecciona la línea que vas a conducir hoy:</label>
+            <select id="select-servicio-chofer" onchange="actualizarEstadoTextoChofer()">
+                <option value="bollenar_stgo">🚍 Buses Bollenar - Santiago (Orellana)</option>
+                <option value="l1">Línea 1 Colectivos (Lolenco - María Pinto)</option>
+                <option value="l2">Línea 2 Colectivos (Los Rulos - Melipilla)</option>
+                <option value="l3">Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
+                <option value="muni_b1">🚌 Bus Muni 1 (Lo Ovalle / Chorombo)</option>
+                <option value="muni_b2">🚌 Bus Muni 2 (La Palma / Ibacache)</option>
+            </select>
+
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
                 <div class="count-display" id="cupos-actuales">4</div>
@@ -440,18 +452,12 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app-content').style.display = 'block';
             
-            if(rolGuardado === 'particular') {
-                switchTab('choferes');
-                document.getElementById('campos-chofer-particular').style.display = 'block';
-            } else {
-                switchTab(rolGuardado);
-            }
+            configurarInterfazPorRol(rolGuardado);
         }
         
         const fotoGuardada = localStorage.getItem('conecta_mp_vehicle_photo');
         if (fotoGuardada) mostrarFotosEnPantallas(fotoGuardada);
 
-        // Cargar reportes del localStorage si existen
         renderizarReportes();
     };
 
@@ -471,11 +477,29 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
         
+        configurarInterfazPorRol(rol);
+    }
+
+    function configurarInterfazPorRol(rol) {
+        const selectorChofer = document.getElementById('select-servicio-chofer');
+        const lblSelector = document.getElementById('lbl-selector-servicio-chofer');
+        const camposParticular = document.getElementById('campos-chofer-particular');
+
         if (rol === 'particular') {
             switchTab('choferes');
-            document.getElementById('campos-chofer-particular').style.display = 'block';
+            if (camposParticular) camposParticular.style.display = 'block';
+            if (selectorChofer) selectorChofer.style.display = 'none';
+            if (lblSelector) lblSelector.style.display = 'none';
+        } else if (rol === 'choferes' || rol === 'bollenar') {
+            switchTab('choferes');
+            if (camposParticular) camposParticular.style.display = 'none';
+            if (selectorChofer) {
+                selectorChofer.style.display = 'block';
+                selectorChofer.value = (rol === 'bollenar') ? 'bollenar_stgo' : 'l1';
+            }
+            if (lblSelector) lblSelector.style.display = 'block';
         } else {
-            document.getElementById('campos-chofer-particular').style.display = 'none';
+            if (camposParticular) camposParticular.style.display = 'none';
             switchTab(rol);
         }
     }
@@ -500,12 +524,11 @@
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         
-        let targetId = tabId === 'particular' ? 'choferes' : tabId;
+        let targetId = (tabId === 'particular' || tabId === 'bollenar') ? 'choferes' : tabId;
         if(document.getElementById('panel-' + targetId)) document.getElementById('panel-' + targetId).classList.add('active');
         if(document.getElementById('btn-tab-' + targetId)) document.getElementById('btn-tab-' + targetId).classList.add('active');
     }
 
-    // Cambiado para manejar scroll-top automático al cambiar sub-pestanas
     function switchSubTab(subTabId) {
         document.querySelectorAll('.table-container').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
@@ -526,13 +549,15 @@
 
     function actualizarEstadoTextoChofer() {
         if(document.getElementById('live-driver-status')) {
-            const esParticular = localStorage.getItem('conecta_mp_role') === 'particular';
-            if(esParticular) {
+            const rol = localStorage.getItem('conecta_mp_role');
+            if(rol === 'particular') {
                 const dest = document.getElementById('driver-dest').value || "No especificado";
                 const precio = document.getElementById('driver-price').value || "Por convenir";
                 document.getElementById('live-driver-status').innerText = `🚗 Particular activo a: ${dest} | Cupos: ${cupos} | Valor: $${precio}`;
             } else {
-                document.getElementById('live-driver-status').innerText = `Próximo vehículo: Activo con ${cupos} cupos`;
+                const selector = document.getElementById('select-servicio-chofer');
+                const lineaNombre = selector ? selector.options[selector.selectedIndex].text : "Vehículo";
+                document.getElementById('live-driver-status').innerText = `${lineaNombre} activo con ${cupos} cupos`;
             }
         }
     }
@@ -583,7 +608,6 @@
         alert(`📍 Ubicación compartida para la línea/servicio [${servicio}].\nNota enviada: "${msg || 'Ninguna'}"${bultos}`);
     }
 
-    // LÓGICA DE ALARMAS Y COMPARTIR PREMIUM
     function activarAlarmaProximidad() {
         alarmaIniciada = !alarmaIniciada;
         const btn = document.querySelector('#controles-premium-activos button');
@@ -608,13 +632,12 @@
         window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
 
-    // MANEJO DE REPORTES LOCALES
     function publicarReporte() {
         const texto = document.getElementById('report-text').value.trim();
         const tipo = document.getElementById('report-type').value;
         if(texto === "") return alert("Por favor escribe el reporte.");
 
-        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports') || "[]");
+        let reportes = JSON.parse(localStorage.getItem('conecta_mp_reports'] || "[]");
         const nuevoReporte = {
             id: Date.now(),
             remitente: localStorage.getItem('conecta_mp_user') || "Anónimo",
@@ -649,7 +672,6 @@
         `).join('');
     }
 
-    // ADMINISTRACIÓN TOTAL
     function abrirAdminMaestro() {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'none';
