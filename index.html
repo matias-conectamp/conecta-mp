@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conecta MP - Control de Horarios</title>
+    <title>Conecta MP - Premium Automático</title>
     <style>
         :root {
             --bg-main: #0b0f19;       
@@ -11,50 +11,90 @@
             --primary-light: #f8fafc; 
             --blue-accent: #2563eb;   
             --blue-glow: #3b82f6;     
-            --text-muted: #94a3b8;
-            --time-bg: #1e293b;
-            --time-text: #38bdf8;
-            --interurban-text: #34d399;
-            --interurban-bg: #064e3b;
+            --success: #0f766e;       
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-muted: #94a3b8;    
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background: var(--bg-main); color: var(--primary-light); padding: 12px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { background: var(--bg-main); color: var(--primary-light); padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        .container { width: 100%; max-width: 500px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .container { width: 100%; max-width: 480px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .brand-title { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Encabezado */
+        .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 24px; gap: 8px; }
+        .brand-logo { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); border-radius: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); font-size: 24px; color: white; animation: float 3s ease-in-out infinite; }
+        .brand-title { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .tabs { display: flex; gap: 4px; background: #0f172a; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 13px; }
-        .tab-btn.active { background: var(--blue-accent); color: white; }
+        /* Pantallas */
+        #auth-screen { display: block; }
+        #main-app-content { display: none; } 
+        #admin-master-panel { display: none; background: #0f172a; border-radius: 16px; padding: 16px; border: 2px solid #3b82f6; margin-top: 15px; }
+
+        /* Navegación */
+        .tabs { display: flex; gap: 4px; background: #0f172a; padding: 4px; border-radius: 14px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .tab-btn { flex: 1; padding: 12px 4px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 12px; transition: all 0.2s ease; }
+        .tab-btn.active { background: var(--bg-card); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        .panel { display: none; }
+        .panel { display: none; margin-bottom: 15px; }
         .panel.active { display: block; }
+        
+        /* Formularios */
+        label { font-size: 13px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 6px; }
+        select, textarea, input[type="text"], input[type="tel"], input[type="number"] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; font-size: 15px; background-color: #0f172a; color: white; transition: all 0.2s; }
+        select:focus, textarea:focus, input:focus { outline: none; border-color: var(--blue-glow); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
+        
+        /* Filtro de Bloqueo Premium */
+        .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
+        .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(6px); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 
-        /* Tarjetas de Servicio */
-        .service-card { background: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
-        .service-title { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-        .service-route { font-size: 13px; color: #a1a1aa; font-weight: 500; margin-bottom: 12px; line-height: 1.4; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+        /* El Mapa GPS */
+        .map-container { position: relative; height: 210px; background: #090d16; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .map-container::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; }
+        .map-content { z-index: 2; text-align: center; width: 100%; padding: 20px; }
+        .map-icon { font-size: 32px; animation: pulse 2s infinite; margin-bottom: 8px; display: inline-block; }
+        .status-badge { display: inline-block; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 5px; }
         
-        /* Bloques de Horarios */
-        .time-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; margin-top: 4px; }
-        .time-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-        
-        /* Horarios Municipales (Azul) */
-        .time-tag { background: var(--time-bg); color: var(--time-text); font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); }
-        
-        /* Horarios Interurbanos (Verde) */
-        .time-tag-interurban { background: var(--interurban-bg); color: var(--interurban-text); font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.2); }
+        /* Muro de Reportes */
+        .report-card { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--blue-accent); }
+        .report-card.danger { border-left-color: var(--danger); }
+        .report-card.warning { border-left-color: var(--warning); }
+        .report-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: bold; }
+        .report-body { font-size: 14px; color: #e2e8f0; font-weight: 500; }
 
-        /* Panel Administrador Oculto */
-        #admin-panel { display: none; background: #0f172a; border-radius: 14px; padding: 16px; border: 1px solid #ef4444; margin-top: 15px; }
-        .admin-input-group { margin-bottom: 12px; }
-        label { font-size: 12px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px; }
-        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); background-color: #1e293b; color: white; font-size: 14px; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 8px; text-align: center; color: white; display: block; text-decoration: none; }
-        .btn-blue { background: var(--blue-accent); }
-        .btn-outline { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); }
+        /* Botones */
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 15px; margin-bottom: 12px; transition: all 0.2s; }
+        .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-ingreso { background: linear-gradient(135deg, #2563eb, #1d4ed8); font-size: 17px; padding: 18px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.3); }
+        .btn-green { background: var(--success); }
+        .btn-mp { background: #009ee3; font-size: 14px; margin-top: 5px; padding: 10px; font-weight: 600; opacity: 0.85; }
+        
+        /* Visualizador de Foto Vehículo */
+        .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); display: none; }
+        
+        /* Contador Choferes */
+        .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
+        .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 24px; font-weight: bold; color: white; cursor: pointer; background: #0f172a; }
+        .count-display { font-size: 42px; font-weight: 800; color: white; }
+        
+        /* Tablas de Horarios */
+        .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+        .sub-btn { flex: 1; min-width: 100px; padding: 10px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
+        .sub-btn.active { background: var(--blue-accent); color: white; border-color: var(--blue-accent); }
+        
+        .table-container { display: none; max-height: 380px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
+        .table-container.active { display: block; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 12px; background: #0f172a; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; vertical-align: top; }
+        th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.1); font-size: 11px; text-transform: uppercase; }
+        .route-section-title { font-weight: bold; color: #3b82f6; font-size: 11px; display: block; margin-bottom: 4px; }
+        .freq-badge { background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+
+        /* Estilos del Panel Admin Visual */
+        .admin-box { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
+        .admin-box h3 { font-size: 14px; color: #3b82f6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -62,230 +102,561 @@
 <div class="container">
     
     <div class="brand-header">
+        <div class="brand-logo">📡</div>
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios de Buses</button>
-        <button class="tab-btn" id="btn-tab-funciones" onclick="switchTab('funciones')">📱 Servicios</button>
-    </div>
-
-    <!-- PANEL PRINCIPAL DE HORARIOS POR HORA -->
-    <div id="panel-horarios" class="panel active">
+    <!-- PANTALLA 1: INGRESO -->
+    <div id="auth-screen">
+        <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
+            Ingresa tus datos para conectarte con el transporte de María Pinto.
+        </p>
         
-        <!-- BUSES BOLLENAR -->
-        <div class="service-card" style="border-left: 3px solid #10b981;">
-            <div class="service-title" style="color: #34d399;">🚍 Buses Bollenar</div>
-            <div class="service-route">Ruta: Bollenar ➔ San José ➔ Santiago (Estación Central)</div>
-            
-            <div class="time-section-label">Horarios aproximados (Mañana):</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">06:15</span>
-                <span class="time-tag-interurban">06:40</span>
-                <span class="time-tag-interurban">07:00</span>
-                <span class="time-tag-interurban">07:20</span>
-                <span class="time-tag-interurban">07:45</span>
-                <span class="time-tag-interurban">08:15</span>
-                <span class="time-tag-interurban">08:45</span>
-                <span class="time-tag-interurban">09:15</span>
-                <span class="time-tag-interurban">09:45</span>
-                <span class="time-tag-interurban">10:15</span>
-                <span class="time-tag-interurban">11:15</span>
-                <span class="time-tag-interurban">12:15</span>
-            </div>
+        <label for="auth-name">Nombre Completo:</label>
+        <input type="text" id="auth-name" placeholder="Ej: Juan Pérez">
 
-            <div class="time-section-label">Horarios de paso (Tarde / Regreso):</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">13:15</span>
-                <span class="time-tag-interurban">14:15</span>
-                <span class="time-tag-interurban">15:15</span>
-                <span class="time-tag-interurban">16:00</span>
-                <span class="time-tag-interurban">16:30</span>
-                <span class="time-tag-interurban">17:00</span>
-                <span class="time-tag-interurban">17:30</span>
-                <span class="time-tag-interurban">18:00</span>
-                <span class="time-tag-interurban">18:40</span>
-                <span class="time-tag-interurban">19:20</span>
-                <span class="time-tag-interurban">20:10</span>
-                <span class="time-tag-interurban">21:00</span>
-            </div>
-        </div>
+        <label for="auth-phone">Teléfono de Contacto:</label>
+        <input type="tel" id="auth-phone" placeholder="Ej: +56912345678">
 
-        <!-- BUSES MELIPILLA -->
-        <div class="service-card" style="border-left: 3px solid #10b981;">
-            <div class="service-title" style="color: #34d399;">🚍 Buses Melipilla</div>
-            <div class="service-route">Ruta: María Pinto ➔ Melipilla ➔ Santiago (Estación Central)</div>
-            
-            <div class="time-section-label">Salidas estimadas (Bloque Mañana):</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">06:00</span>
-                <span class="time-tag-interurban">06:20</span>
-                <span class="time-tag-interurban">06:40</span>
-                <span class="time-tag-interurban">07:00</span>
-                <span class="time-tag-interurban">07:15</span>
-                <span class="time-tag-interurban">07:30</span>
-                <span class="time-tag-interurban">07:50</span>
-                <span class="time-tag-interurban">08:10</span>
-                <span class="time-tag-interurban">08:30</span>
-                <span class="time-tag-interurban">09:00</span>
-                <span class="time-tag-interurban">09:30</span>
-                <span class="time-tag-interurban">10:00</span>
-                <span class="time-tag-interurban">11:00</span>
-                <span class="time-tag-interurban">12:00</span>
-            </div>
+        <label for="auth-role">Tipo de Perfil Inicial:</label>
+        <select id="auth-role" onchange="toggleIngresoCampos(this.value)">
+            <option value="pasajeros">📱 Pasajero / Vecino</option>
+            <option value="choferes">🚗 Chofer de Colectivo o Liebre</option>
+            <option value="particular">🚘 Chofer Auto Particular (Viaje Compartido)</option>
+        </select>
 
-            <div class="time-section-label">Salidas estimadas (Bloque Tarde):</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">13:00</span>
-                <span class="time-tag-interurban">14:00</span>
-                <span class="time-tag-interurban">15:00</span>
-                <span class="time-tag-interurban">15:40</span>
-                <span class="time-tag-interurban">16:10</span>
-                <span class="time-tag-interurban">16:40</span>
-                <span class="time-tag-interurban">17:10</span>
-                <span class="time-tag-interurban">17:40</span>
-                <span class="time-tag-interurban">18:10</span>
-                <span class="time-tag-interurban">18:45</span>
-                <span class="time-tag-interurban">19:30</span>
-                <span class="time-tag-interurban">20:30</span>
-            </div>
-        </div>
+        <button class="btn btn-ingreso" onclick="ingresoForzado()">ENTRAR A LA APP</button>
 
-        <!-- LIEBRES LOS RULOS / COLECTIVOS L2 -->
-        <div class="service-card" style="border-left: 3px solid #10b981;">
-            <div class="service-title" style="color: #34d399;">🚗 Liebres Los Rulos / Colectivos</div>
-            <div class="service-route">Ruta: Los Rulos ➔ Chorombo ➔ Bollenar ➔ Melipilla</div>
-            
-            <div class="time-section-label">Salidas Horario Punta Mañana:</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">06:30</span>
-                <span class="time-tag-interurban">07:00</span>
-                <span class="time-tag-interurban">07:20</span>
-                <span class="time-tag-interurban">07:40</span>
-                <span class="time-tag-interurban">08:10</span>
-                <span class="time-tag-interurban">08:40</span>
-                <span class="time-tag-interurban">09:15</span>
-            </div>
-
-            <div class="time-section-label">Salidas Horario Punta Tarde:</div>
-            <div class="time-grid">
-                <span class="time-tag-interurban">16:15</span>
-                <span class="time-tag-interurban">16:45</span>
-                <span class="time-tag-interurban">17:15</span>
-                <span class="time-tag-interurban">17:45</span>
-                <span class="time-tag-interurban">18:15</span>
-                <span class="time-tag-interurban">18:45</span>
-                <span class="time-tag-interurban">19:30</span>
-            </div>
-        </div>
-
-        <!-- BUS MUNICIPAL 1: LO OVALLE -->
-        <div class="service-card" style="border-left: 3px solid #3b82f6;">
-            <div class="service-title" style="color: #60a5fa;">🚌 Muni 1: Lo Ovalle / Chorombo</div>
-            <div class="service-route">M. Pinto ➔ Ranchillo ➔ Lo Ovalle ➔ Isla de Rojas ➔ Cancha de Piedra ➔ Parrón ➔ Chorombo Alto</div>
-            
-            <div class="time-section-label">Salidas desde María Pinto:</div>
-            <div class="time-grid">
-                <span class="time-tag">07:15</span>
-                <span class="time-tag">08:00</span>
-                <span class="time-tag">09:10</span>
-                <span class="time-tag">09:40</span>
-                <span class="time-tag">11:00</span>
-                <span class="time-tag">11:30</span>
-                <span class="time-tag">14:00</span>
-                <span class="time-tag">14:30</span>
-                <span class="time-tag">15:50</span>
-                <span class="time-tag">16:20</span>
-            </div>
-
-            <div class="time-section-label">Regresos desde Cruce Chorombo:</div>
-            <div class="time-grid">
-                <span class="time-tag">08:30</span>
-                <span class="time-tag">10:20</span>
-                <span class="time-tag">12:10</span>
-                <span class="time-tag">15:10</span>
-                <span class="time-tag">16:50</span>
-            </div>
-        </div>
-
-        <!-- BUS MUNICIPAL 2: LA PALMA -->
-        <div class="service-card" style="border-left: 3px solid #3b82f6;">
-            <div class="service-title" style="color: #60a5fa;">🚌 Muni 2: La Palma / Ibacache</div>
-            <div class="service-route">M. Pinto ➔ Baracaldo ➔ Chorombo Bajo ➔ Chorombo Alto ➔ Ibacache ➔ La Palma</div>
-            
-            <div class="time-section-label">Salidas desde María Pinto:</div>
-            <div class="time-grid">
-                <span class="time-tag">07:20</span>
-                <span class="time-tag">08:40</span>
-                <span class="time-tag">09:50</span>
-                <span class="time-tag">10:40</span>
-                <span class="time-tag">11:50</span>
-                <span class="time-tag">13:50</span>
-                <span class="time-tag">15:00</span>
-                <span class="time-tag">16:00</span>
-                <span class="time-tag">17:10</span>
-            </div>
-
-            <div class="time-section-label">Regresos desde La Palma:</div>
-            <div class="time-grid">
-                <span class="time-tag">07:50</span>
-                <span class="time-tag">09:10</span>
-                <span class="time-tag">11:10</span>
-                <span class="time-tag">14:20</span>
-                <span class="time-tag">16:30</span>
-            </div>
-        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin: 25px 0 5px 0; font-weight:600; text-align:center;">
+            ¿Deseas activar las opciones Premium?
+        </p>
+        <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Enlace Opcional Mercado Pago</a>
     </div>
 
-    <!-- PANEL SERVICIOS COMPLEMENTARIOS -->
-    <div id="panel-funciones" class="panel">
-        <p style="font-size:14px; color:var(--text-muted); margin-bottom:15px; text-align:center;">Herramientas adicionales de reporte y GPS.</p>
-        <button class="btn btn-blue" onclick="alert('Ubicación de ruta compartida.')">📍 Compartir mi Ubicación en Ruta</button>
-        <button class="btn btn-outline" style="margin-top:10px;" onclick="alert('Función de reporte vial.')">⚠️ Informar Incidente Vial</button>
-    </div>
-
-    <!-- CONTROL ADMINISTRADOR OCULTO -->
-    <div id="admin-panel">
-        <h3 style="color:#ef4444; text-align:center; margin-bottom:12px;">🛠️ Control del Administrador</h3>
-        <div class="admin-input-group">
-            <label>Código de Activación Manual:</label>
-            <input type="text" id="admin-custom-code" value="MP2026">
+    <!-- PANTALLA 2: APP COMPLETA -->
+    <div id="main-app-content">
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
+            <button class="tab-btn" id="btn-tab-reportes" onclick="switchTab('reportes')">⚠️ Reportes</button>
+            <button class="tab-btn" id="btn-tab-choferes" onclick="switchTab('choferes')">🚗 Choferes</button>
+            <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Buses</button>
         </div>
-        <button class="btn btn-blue" onclick="guardarConfiguracionAdmin()">Guardar Cambios de Servidor</button>
-        <button class="btn btn-outline" onclick="cerrarAdminVisual()" style="margin-top:8px;">Cerrar Administrador</button>
+
+        <!-- PANEL 1: GPS -->
+        <div id="panel-pasajeros" class="panel active">
+            <label>Selecciona tu tipo o línea de transporte:</label>
+            <select id="select-servicio">
+                <option value="l1">Línea 1 Colectivos (Lolenco - María Pinto)</option>
+                <option value="l2">Línea 2 Colectivos (Los Rulos - Melipilla)</option>
+                <option value="l3">Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
+                <option value="muni_b1">🚌 Bus Muni 1 (Lo Ovalle / Chorombo)</option>
+                <option value="muni_b2">🚌 Bus Muni 2 (La Palma / Ibacache)</option>
+                <option value="particular">🚘 Autos Particulares (Viajes Compartidos)</option>
+            </select>
+            
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:14px; font-weight:500; cursor:pointer;">
+                <input type="checkbox" id="check-equipaje" style="width:18px; height:18px; accent-color: var(--blue-accent);"> ¿Llevas bultos grandes?
+            </label>
+            
+            <textarea id="msg-pasajero" rows="2" placeholder="Nota para el chofer o destino solicitado..."></textarea>
+            
+            <div class="premium-blur-zone">
+                <div class="premium-overlay" id="premium-lock">
+                    <span style="font-size: 26px; margin-bottom: 4px;">👑</span>
+                    <div style="font-weight: 800; font-size: 15px; color: white;">RASTREADOR PREMIUM EN VIVO</div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 12px 0; max-width: 250px;">
+                        El mapa se activará de forma automática inmediatamente después de completar tu pago.
+                    </p>
+                    <a href="https://mpago.la/14kajSj" target="_blank" class="btn btn-gold" style="padding: 10px 16px; font-size: 13px; margin-bottom: 4px; width:auto;">👑 Activar con Mercado Pago</a>
+                    <button onclick="ingresarCodigoManual()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top:5px;">[Tengo un código de activación]</button>
+                </div>
+
+                <div class="map-container">
+                    <div class="map-content">
+                        <span class="map-icon">🛰️</span>
+                        <div style="font-size: 14px; font-weight: 700; color: white;">LOCALIZACIÓN EN RUTA</div>
+                        <div class="status-badge" id="gps-coords">Buscando señal GPS...</div>
+                        <div style="font-size:12px; color:#60a5fa; margin-top:10px; font-weight: 600;" id="live-driver-status">Esperando señal de vehículos...</div>
+                        <img id="passenger-view-photo" class="vehicle-photo-preview" alt="Foto del vehículo">
+                    </div>
+                </div>
+
+                <div id="controles-premium-activos" style="display: none; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                    <label style="color: #f59e0b; font-size: 12px; font-weight: bold; margin-bottom: 8px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD:</label>
+                    <select id="premium-distancia-alarma" style="margin-bottom: 8px; padding: 8px; font-size: 13px;">
+                        <option value="1.0">Avisar cuando esté a 1.0 km (Ideal Colectivos)</option>
+                        <option value="2.5">Avisar cuando esté a 2.5 km (Ideal Liebres/Autos)</option>
+                        <option value="5.0">Avisar cuando esté a 5.0 km (Ideal Viajes Largos)</option>
+                    </select>
+                    
+                    <audio id="audio-alarma" src="https://assets.mixkit.co/active_storage/sfx/911/911-84.wav" preload="auto"></audio>
+                    <button class="btn btn-green" style="padding: 10px; font-size: 13px; margin-top: 5px; margin-bottom: 15px; background: #0f766e;" onclick="activarAlarmaProximidad()">🔕 Iniciar Alarma de Proximidad</button>
+
+                    <label style="color: #2563eb; font-size: 12px; font-weight: bold; margin-bottom: 8px;">🚨 SEGURIDAD / COMPARTIR VIAJE:</label>
+                    <button class="btn" style="background: #25d366; padding: 12px; font-size: 14px; margin-bottom: 5px;" onclick="compartirRutaWhatsApp()">✳️ Compartir mi Ruta por WhatsApp</button>
+                </div>
+
+                <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir mi Ubicación en Ruta</button>
+            </div>
+        </div>
+
+        <!-- PANEL 2: REPORTES -->
+        <div id="panel-reportes" class="panel">
+            <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="color: #60a5fa;">📣 Informar Incidente Vial:</label>
+                <input type="text" id="report-text" placeholder="Ej: Taco lento ingresando a Melipilla...">
+                <select id="report-type">
+                    <option value="warning">⚠️ Retraso / Taco / Desvío</option>
+                    <option value="danger">🚨 Accidente / Panne</option>
+                    <option value="info">ℹ️ Noticia / Estado Normal</option>
+                </select>
+                <button class="btn btn-blue" style="padding:10px; font-size:14px;" onclick="publicarReporte()">Publicar Reporte</button>
+            </div>
+            <div id="muro-reportes"></div>
+        </div>
+
+        <!-- PANEL 3: CHOFERES -->
+        <div id="panel-choferes" class="panel">
+            <div class="counter-container">
+                <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
+                <div class="count-display" id="cupos-actuales">4</div>
+                <button class="btn-count" onclick="cambiarCupo(1)">+</button>
+            </div>
+            <p style="text-align:center; font-weight:700; font-size:12px; color:var(--text-muted); text-transform: uppercase; margin-bottom: 20px;">Asientos Disponibles</p>
+            
+            <div id="campos-chofer-particular" style="background: rgba(255,158,11,0.04); padding:14px; border-radius:14px; border:1px solid rgba(245,158,11,0.2); margin-bottom:15px; display:none;">
+                <label style="color:#f59e0b;">📍 Destino / Ruta del Viaje:</label>
+                <input type="text" id="driver-dest" placeholder="Ej: María Pinto -> Metro Las Rejas por Alameda">
+                
+                <label style="color:#f59e0b;">💰 Cooperación por Asiento ($):</label>
+                <input type="number" id="driver-price" placeholder="Ej: 2500">
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
+                <label>📸 Foto de tu Vehículo:</label>
+                <input type="file" id="driver-photo-input" accept="image/*" style="display:none;" onchange="procesarFotoChofer(this)">
+                <button class="btn" style="background:#334155; font-size:13px; padding:10px;" onclick="document.getElementById('driver-photo-input').click()">📷 Tomar/Subir Foto</button>
+                <img id="driver-photo-preview" class="vehicle-photo-preview">
+            </div>
+
+            <button class="btn btn-green" onclick="activarRutaChofer()">📡 Activar Transmisión en Vivo</button>
+            <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
+        </div>
+
+        <!-- PANEL 4: HORARIOS GENERALES -->
+        <div id="panel-horarios" class="panel">
+            <div class="sub-tabs">
+                <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Santiago / Interurbanos</button>
+                <button class="sub-btn" id="sbtn-bus1" onclick="switchSubTab('bus1')">🚌 Muni 1: Lo Ovalle</button>
+                <button class="sub-btn" id="sbtn-bus2" onclick="switchSubTab('bus2')">🚌 Muni 2: La Palma</button>
+            </div>
+
+            <!-- RECORRIDOS SANTIAGO E INTERURBANOS -->
+            <div id="tab-santiago" class="table-container active">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Servicio / Línea</th>
+                            <th>Ruta Principal</th>
+                            <th>Horarios / Frecuencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="route-section-title">Buses Bollenar</span></td>
+                            <td>Bollenar - San José - Santiago (Estación Central)</td>
+                            <td><span class="freq-badge">Cada 20-30 min</span><br><small style="color:var(--text-muted)">Servicio Regular Directo</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Buses Melipilla</span></td>
+                            <td>María Pinto - Melipilla - Estación Central (Santiago)</td>
+                            <td><span class="freq-badge">Cada 15-20 min</span><br><small style="color:var(--text-muted)">Desde las 06:00 hrs</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Liebres Los Rulos</span></td>
+                            <td>Los Rulos - Chorombo - Bollenar - Melipilla</td>
+                            <td><span class="freq-badge">Horarios Punta</span><br><small style="color:var(--text-muted)">Mañana y Tarde continuo</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Ruta Curacaví</span></td>
+                            <td>María Pinto - Cruce Chorombo - Curacaví - Santiago</td>
+                            <td><span class="freq-badge">Cada 30 min</span><br><small style="color:var(--text-muted)">Horario Valle y Punta</small></td>
+                        </tr>
+                        <tr>
+                            <td><span class="route-section-title">Colectivos L2</span></td>
+                            <td>Los Rulos - Chorombo - Melipilla</td>
+                            <td>Frecuente mañana y tarde</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BUS 1: LO OVALLE / CHOROMBO -->
+            <div id="tab-bus1" class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Ranchillo Int. - Lo Ovalle - Isla de Rojas - Cancha de Piedra - Parrón - Ranchillo Afuera</span></th>
+                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: El Redil - El Bosque - Malalhue - Las Mercedes - Cruce Chorombo Alto</span></th>
+                            <th>Salida: Cruce Chorombo<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Las Mercedes - Malalhue - El Bosque - El Redil - María Pinto</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>07:15</td><td>08:00</td><td>08:30</td></tr>
+                        <tr><td>09:10</td><td>09:40</td><td>10:20</td></tr>
+                        <tr><td>11:00</td><td>11:30</td><td>12:10</td></tr>
+                        <tr><td>14:00</td><td>14:30</td><td>15:10</td></tr>
+                        <tr><td>15:50</td><td>16:20</td><td>16:50</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BUS 2: LA PALMA / IBACACHE -->
+            <div id="tab-bus2" class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Baracaldo - Chorombo Bajo - Chorombo Alto - Ibacache - La Palma</span></th>
+                            <th>Salida: La Palma<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: Ibacache - Chorombo Alto - Chorombo Bajo - Baracaldo - María Pinto</span></th>
+                            <th>Salida: M. Pinto<br><span style="color:#94a3b8; font-size:9px; font-weight:normal;">Destino: El Rosario - El Bosque - El Redil - María Pinto</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>07:20</td><td>07:50</td><td>09:50</td></tr>
+                        <tr><td>08:40</td><td>09:10</td><td>11:50</td></tr>
+                        <tr><td>10:40</td><td>11:10</td><td>15:00</td></tr>
+                        <tr><td>13:50</td><td>14:20</td><td>17:10</td></tr>
+                        <tr><td>16:00</td><td>16:30</td><td>-</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 8px; font-style: italic;">
+                * Revise las pestañas superiores para alternar entre recorridos interurbanos y municipales gratuitos.
+            </p>
+        </div>
+
+        <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
-    <button onclick="solicitarAccesoAdmin()" style="background:transparent; border:none; color:rgba(255,255,255,0.15); font-size:11px; margin-top:25px; cursor:pointer; width:100%; text-align:center;">⚙️ Acceso Administrador</button>
+    <!-- NUEVA PANTALLA: CENTRO DE CONTROL ADMINISTRADOR TOTAL -->
+    <div id="admin-master-panel">
+        <h2 style="font-size: 18px; text-align: center; color: #3b82f6; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">🛠️ Panel de Control Maestro</h2>
+        
+        <div class="admin-box">
+            <h3>🔑 Sistema de Accesos</h3>
+            <button class="btn btn-gold" style="font-size: 13px; padding: 10px; margin-bottom: 8px;" onclick="forzarPremiumAdmin()">👑 Forzar Modo Premium General (Pruebas)</button>
+            <button class="btn" style="background: #475569; font-size: 13px; padding: 10px;" onclick="cambiarCodigoRespaldoAdmin()">⚙️ Cambiar Código de Activación Manual</button>
+        </div>
+
+        <div class="admin-box">
+            <h3>⚠️ Gestión de Alertas y Tránsito</h3>
+            <button class="btn" style="background: var(--danger); font-size: 13px; padding: 10px; margin-bottom: 8px;" onclick="limpiarTodosLosReportesAdmin()">🗑️ Borrar Todos los Reportes del Muro</button>
+            <button class="btn" style="background: var(--blue-accent); font-size: 13px; padding: 10px;" onclick="inyectarReporteSimuladoAdmin()">📢 Publicar Comunicado Oficial Admin</button>
+        </div>
+
+        <div class="admin-box">
+            <h3>👥 Datos del Usuario Actual</h3>
+            <div id="admin-user-details" style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                Cargando sesión...
+            </div>
+        </div>
+
+        <button class="btn btn-green" style="margin-top: 15px;" onclick="salirDelPanelAdmin()">❌ Salir del Panel Administrador</button>
+    </div>
+
+    <button class="btn" style="background:transparent; color:var(--text-muted); font-size:11px; padding:4px; margin-top:10px;" onclick="abrirAdminMaestro()">⚙️ Panel de Administración</button>
 </div>
 
 <script>
+    let alarmaIniciada = false;
+    let miGpsWatchId = null;
+
+    window.onload = function() {
+        const parametrosUrl = new URLSearchParams(window.location.search);
+        if (parametrosUrl.get('pago') === 'exitoso' || parametrosUrl.get('status') === 'approved') {
+            localStorage.setItem('conecta_mp_premium', 'activo');
+            alert("👑 ¡Pago verificado con éxito! Tu acceso Premium ya está activo.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (localStorage.getItem('conecta_mp_premium') === 'activo') {
+            const candado = document.getElementById('premium-lock');
+            if(candado) candado.style.display = 'none';
+            
+            const panelPremium = document.getElementById('controles-premium-activos');
+            if(panelPremium) panelPremium.style.display = 'block';
+        }
+
+        const usuarioGuardado = localStorage.getItem('conecta_mp_user');
+        const rolGuardado = localStorage.getItem('conecta_mp_role');
+        if (usuarioGuardado && rolGuardado) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app-content').style.display = 'block';
+            
+            if(rolGuardado === 'particular') {
+                switchTab('choferes');
+                document.getElementById('campos-chofer-particular').style.display = 'block';
+            } else {
+                switchTab(rolGuardado);
+            }
+        }
+        
+        const fotoGuardada = localStorage.getItem('conecta_mp_vehicle_photo');
+        if (fotoGuardada) mostrarFotosEnPantallas(fotoGuardada);
+    };
+
+    function toggleIngresoCampos(value) {}
+
+    function ingresoForzado() {
+        const nombre = document.getElementById('auth-name').value.trim();
+        const telefono = document.getElementById('auth-phone').value.trim();
+        const rol = document.getElementById('auth-role').value;
+
+        if (nombre === "" || telefono === "") return alert("⚠️ Rellena todos los campos.");
+
+        localStorage.setItem('conecta_mp_user', nombre);
+        localStorage.setItem('conecta_mp_phone', telefono);
+        localStorage.setItem('conecta_mp_role', rol);
+        
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app-content').style.display = 'block';
+        
+        if (rol === 'particular') {
+            switchTab('choferes');
+            document.getElementById('campos-chofer-particular').style.display = 'block';
+        } else {
+            document.getElementById('campos-chofer-particular').style.display = 'none';
+            switchTab(rol);
+        }
+    }
+
+    function ingresarCodigoManual() {
+        const input = prompt("Ingresa el código de activación alternativo:");
+        const masterCode = localStorage.getItem('conecta_mp_custom_code') || "MP2026";
+        if (input === masterCode) {
+            localStorage.setItem('conecta_mp_premium', 'activo');
+            alert("👑 ¡Premium Activado!");
+            location.reload();
+        } else {
+            alert("Código incorrecto.");
+        }
+    }
+
+    function cerrarSesion() {
+        if(confirm("¿Cerrar sesión?")) { localStorage.clear(); location.reload(); }
+    }
+
     function switchTab(tabId) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         
-        document.getElementById('panel-' + tabId).classList.add('active');
-        document.getElementById('btn-tab-' + tabId).classList.add('active');
+        let targetId = tabId === 'particular' ? 'choferes' : tabId;
+        if(document.getElementById('panel-' + targetId)) document.getElementById('panel-' + targetId).classList.add('active');
+        if(document.getElementById('btn-tab-' + targetId)) document.getElementById('btn-tab-' + targetId).classList.add('active');
     }
 
-    function solicitarAccesoAdmin() {
-        const pass = prompt("🔐 Introduce la clave de Administrador:");
-        if (pass === "ADMIN2026") {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-        } else {
-            alert("Acceso denegado.");
+    function switchSubTab(subTabId) {
+        document.querySelectorAll('.table-container').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + subTabId).classList.add('active');
+        document.getElementById('sbtn-' + subTabId).classList.add('active');
+    }
+
+    let cupos = 4;
+    function cambiarCupo(valor) {
+        cupos = Math.max(0, Math.min(15, cupos + valor));
+        document.getElementById('cupos-actuales').innerText = cupos;
+        actualizarEstadoTextoChofer();
+    }
+
+    function actualizarEstadoTextoChofer() {
+        if(document.getElementById('live-driver-status')) {
+            const esParticular = localStorage.getItem('conecta_mp_role') === 'particular';
+            if(esParticular) {
+                const dest = document.getElementById('driver-dest').value || "No especificado";
+                const precio = document.getElementById('driver-price').value || "Por convenir";
+                document.getElementById('live-driver-status').innerText = `🚗 Particular activo a: ${dest} | Cupos: ${cupos} | Valor: $${precio}`;
+            } else {
+                document.getElementById('live-driver-status').innerText = `Próximo vehículo: Activo con ${cupos} cupos`;
+            }
         }
     }
 
-    function cerrarAdminVisual() {
-        document.getElementById('admin-panel').style.display = 'none';
+    function procesarFotoChofer(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('conecta_mp_vehicle_photo', e.target.result);
+                mostrarFotosEnPantallas(e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
-    function guardarConfiguracionAdmin() {
-        const codigo = document.getElementById('admin-custom-code').value;
-        localStorage.setItem('conecta_mp_custom_code', codigo);
-        alert("Configuración guardada.");
-        cerrarAdminVisual();
+    function mostrarFotosEnPantallas(base64) {
+        if(document.getElementById('driver-photo-preview')) { document.getElementById('driver-photo-preview').src = base64; document.getElementById('driver-photo-preview').style.display = 'block'; }
+        if(document.getElementById('passenger-view-photo')) { document.getElementById('passenger-view-photo').src = base64; document.getElementById('passenger-view-photo').style.display = 'block'; }
+    }
+
+    function activarRutaChofer() {
+        if (navigator.geolocation) {
+            actualizarEstadoTextoChofer();
+            navigator.geolocation.watchPosition((p) => {
+                document.getElementById('chofer-gps-status').innerText = `📡 Activo: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
+            });
+            alert("Transmisión en vivo iniciada para tu viaje.");
+        }
+    }
+
+    function enviarAlertaPasajero() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((p) => {
+                document.getElementById('gps-coords').innerText = `Ubicación Enviada`;
+            });
+        }
+    }
+
+    function publicarReporte() {
+        const t = document.getElementById('report-text').value.trim();
+        if(!t) return;
+        const m = document.getElementById('muro-reportes');
+        const c = document.createElement('div');
+        c.className = `report-card info`;
+        c.innerHTML = `<div class="report-header"><span>📣 INFORME</span><span>Ahora</span></div><div class="report-body">${t}</div>`;
+        m.insertBefore(c, m.firstChild);
+        document.getElementById('report-text').value = "";
+    }
+
+    /* CONTROL DE ADMINISTRACIÓN AVANZADO INTERACTIVO */
+    function abrirAdminMaestro() {
+        const pass = prompt("🔐 Ingresa la Clave Maestra de Administrador:");
+        if(pass !== "ADMIN2026") return alert("❌ Clave incorrecta.");
+        
+        // Ocultar las pantallas de usuario común
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app-content').style.display = 'none';
+        
+        // Mostrar el panel de control maestro visual
+        document.getElementById('admin-master-panel').style.display = 'block';
+        
+        // Cargar datos en vivo del usuario en el panel
+        const user = localStorage.getItem('conecta_mp_user') || 'Ninguno';
+        const phone = localStorage.getItem('conecta_mp_phone') || 'Ninguno';
+        const role = localStorage.getItem('conecta_mp_role') || 'Ninguno';
+        const prem = localStorage.getItem('conecta_mp_premium') || 'Inactivo';
+        const customCode = localStorage.getItem('conecta_mp_custom_code') || "MP2026";
+
+        document.getElementById('admin-user-details').innerHTML = `
+            <strong>Usuario Activo:</strong> ${user}<br>
+            <strong>Contacto:</strong> ${phone}<br>
+            <strong>Rol de Sesión:</strong> ${role}<br>
+            <strong>Estado Premium:</strong> <span style="color:#f59e0b">${prem}</span><br>
+            <strong>Código de Respaldo Actual:</strong> ${customCode}
+        `;
+    }
+
+    function salirDelPanelAdmin() {
+        document.getElementById('admin-master-panel').style.display = 'none';
+        if (localStorage.getItem('conecta_mp_user')) {
+            document.getElementById('main-app-content').style.display = 'block';
+        } else {
+            document.getElementById('auth-screen').style.display = 'block';
+        }
+    }
+
+    function forzarPremiumAdmin() {
+        localStorage.setItem('conecta_mp_premium', 'activo');
+        alert("👑 Modo Premium forzado globalmente. Los candados se eliminarán.");
+        abrirAdminMaestro(); 
+    }
+
+    function cambiarCodigoRespaldoAdmin() {
+        const nCode = prompt("Escribe el nuevo código de respaldo manual:", "MP2026");
+        if(nCode) {
+            localStorage.setItem('conecta_mp_custom_code', nCode);
+            alert(`Código modificado exitosamente a: ${nCode}`);
+            abrirAdminMaestro();
+        }
+    }
+
+    function limpiarTodosLosReportesAdmin() {
+        document.getElementById('muro-reportes').innerHTML = "";
+        alert("🗑️ El muro de incidentes ha sido limpiado por completo.");
+    }
+
+    function inyectarReporteSimuladoAdmin() {
+        const mensaje = prompt("Escribe el mensaje oficial que verán los vecinos:", "Aviso: Buses municipales con retraso de 10 min por trabajos en la vía.");
+        if(!mensaje) return;
+        const m = document.getElementById('muro-reportes');
+        const c = document.createElement('div');
+        c.className = `report-card danger`;
+        c.innerHTML = `<div class="report-header"><span style="color:#ef4444">🚨 COMUNICADO OFICIAL</span><span>Ahora</span></div><div class="report-body">${mensaje}</div>`;
+        m.insertBefore(c, m.firstChild);
+        alert("Comunicado publicado en el muro principal.");
+    }
+
+    function compartirRutaWhatsApp() {
+        if (!navigator.geolocation) return alert("Tu teléfono no soporta geolocalización.");
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const urlMapa = `https://www.google.com/maps?q=${lat},${lon}`;
+            const textoMensaje = encodeURIComponent(`🚨 Conecta MP - Viaje Seguro: Hola, voy en tránsito por la comuna. Sigue mi ubicación en vivo aquí: ${urlMapa}`);
+            window.open(`https://api.whatsapp.com/send?text=${textoMensaje}`, '_blank');
+        }, () => {
+            alert("No pudimos obtener tu ubicación para el mensaje de emergencia.");
+        });
+    }
+
+    function activarAlarmaProximidad() {
+        const botonAlarma = event.currentTarget;
+        if (alarmaIniciada) {
+            alarmaIniciada = false;
+            if(miGpsWatchId) navigator.geolocation.clearWatch(miGpsWatchId);
+            botonAlarma.innerText = "🔕 Iniciar Alarma de Proximidad";
+            botonAlarma.style.background = "#0f766e";
+            document.getElementById('live-driver-status').innerText = "Alarma desactivada.";
+            return;
+        }
+
+        if (!navigator.geolocation) return alert("Tu dispositivo no soporta localización.");
+        alarmaIniciada = true;
+        botonAlarma.innerText = "🛑 Detener Alarma Activa";
+        botonAlarma.style.background = "#ef4444";
+        document.getElementById('live-driver-status').innerText = "Rastreador en segundo plano activo...";
+
+        const choferLat = -33.6125; 
+        const choferLon = -71.2184;
+
+        miGpsWatchId = navigator.geolocation.watchPosition((position) => {
+            const miLat = position.coords.latitude;
+            const miLon = position.coords.longitude;
+            const distanciaKM = calcularDistanciaHaversine(miLat, miLon, choferLat, choferLon);
+            const limiteSeteado = parseFloat(document.getElementById('premium-distancia-alarma').value);
+
+            document.getElementById('live-driver-status').innerText = `Vehículo en ruta a: ${distanciaKM.toFixed(2)} km de ti.`;
+
+            if (distanciaKM <= limiteSeteado) {
+                const sonido = document.getElementById('audio-alarma');
+                sonido.play().catch(e => console.log("Interacción previa requerida."));
+                document.getElementById('live-driver-status').innerText = `⚠️ ¡VEHÍCULO CERCA! A menos de ${distanciaKM.toFixed(1)} km.`;
+                if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
+            }
+        }, (error) => {
+            console.log("Error en watchPosition");
+        }, { enableHighAccuracy: true });
+    }
+
+    function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; 
     }
 </script>
 </body>
