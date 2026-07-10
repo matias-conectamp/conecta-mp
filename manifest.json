@@ -1,17 +1,17 @@
 {
-  "name": "Conecta MP - Red de Movilidad",
+  "name": "Conecta MP - Movilidad",
   "short_name": "Conecta MP",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "orientation": "portrait-primary",
+  "background_color": "#0b0f19",
+  "theme-color": "#2563eb",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "./icon.png",
-      "sizes": "512x512",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' rx='110' fill='%230b0f19'/><rect width='472' height='472' x='20' y='20' rx='95' fill='none' stroke='%233b82f6' stroke-width='6' opacity='0.2'/><path d='M130 320c0-70 110-140 126-150 16 10 126 80 126 150 0 70-56 126-126 126s-126-56-126-126z' fill='%232563eb' opacity='0.2'/><circle cx='256' cy='320' r='50' fill='none' stroke='%233b82f6' stroke-width='14'/><circle cx='256' cy='320' r='90' fill='none' stroke='%232563eb' stroke-width='10' stroke-dasharray='15 15'/><path d='M170 310h172c10 0 18-8 18-18v-30c0-15-12-28-28-30l-20-30c-8-12-20-18-34-18h-44c-14 0-26 6-34 18l-20 30c-16 2-28 15-28 30v30c0 10 8 18 18 18z' fill='%23ffffff'/><circle cx='210' cy='290' r='12' fill='%233b82f6'/><circle cx='302' cy='290' r='12' fill='%233b82f6'/><path d='M210 230h92' stroke='%230b0f19' stroke-width='16' stroke-linecap='round'/></svg>",
       "type": "image/png",
-      "purpose": "any"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ]
 }
