@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conecta MP - Nube Real</title>
     
+    <!-- Leaflet.js para el Mapa Real -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- Scripts de Firebase (Librerías oficiales en la nube) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -120,6 +122,7 @@
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
+    <!-- PANTALLA 1: INGRESO -->
     <div id="auth-screen">
         <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
             ¡Transporte en vivo para María Pinto! Los perfiles de Choferes son 100% gratuitos para incentivar rutas activas.
@@ -157,6 +160,7 @@
         </div>
     </div>
 
+    <!-- PANTALLA 2: APP COMPLETA -->
     <div id="main-app-content">
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS Ruta</button>
@@ -165,6 +169,7 @@
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios</button>
         </div>
 
+        <!-- PANEL 1: PASAJEROS + GPS -->
         <div id="panel-pasajeros" class="panel active">
             <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 14px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
                 <label>Selecciona Servicio a Buscar:</label>
@@ -188,6 +193,7 @@
                 <div id="pasajero-gps-local-status" style="text-align:center; font-size:11px; margin-top:6px; color:#cbd5e1;"></div>
             </div>
             
+            <!-- Zona del Mapa Leaflet Real -->
             <div class="premium-blur-zone">
                 <div class="premium-overlay" id="premium-lock">
                     <span style="font-size: 26px; margin-bottom: 4px;">👑</span>
@@ -199,6 +205,7 @@
                     <button onclick="ingresarCodigoManual()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top:5px;">[Ingresar código de activación manual]</button>
                 </div>
 
+                <!-- Div donde se renderiza Leaflet real -->
                 <div id="map"></div>
             </div>
             
@@ -206,12 +213,13 @@
             <div style="text-align:center; font-size:12px; color:#60a5fa; margin:10px 0; font-weight: 600;" id="live-driver-status">Conéctate Premium para recibir telemetría...</div>
             <img id="passenger-view-photo" class="vehicle-photo-preview" alt="Foto del vehículo en ruta">
 
+            <!-- Características Adicionales con Vitrina de Venta -->
             <div class="premium-showcase-box" id="showcase-alarma">
                 <div class="lock-badge">PREMIUM</div>
                 <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 4px;">🔔 ALARMA ACÚSTICA DE PARADERO:</label>
                 <select id="premium-distancia-alarma" disabled style="margin-bottom: 6px; padding: 6px; font-size: 12px; opacity:0.6;">
                     <option value="1.0">Avisar cuando el chofer esté a 1.0 km</option>
-                    <option value="2.5">Avisar when the chofer esté a 2.5 km</option>
+                    <option value="2.5">Avisar cuando el chofer esté a 2.5 km</option>
                 </select>
                 <button class="btn" style="padding: 8px; font-size: 12px; margin-bottom: 0; background: #334155; color:var(--text-muted);" onclick="alertarBloqueoPremium()">🔕 Activar Alerta Sonora ($1.500/mes)</button>
             </div>
@@ -222,6 +230,7 @@
                 <button class="btn" style="background: #334155; padding: 8px; font-size: 12px; margin-bottom: 0; color:var(--text-muted);" onclick="alertarBloqueoPremium()">✳️ Enviar Enlace de Monitoreo por WhatsApp</button>
             </div>
             
+            <!-- Controles Reales Ocultos que se encienden al pagar -->
             <div id="controles-premium-activos" style="display: none; margin-top: 12px; background: rgba(245,158,11,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--gold-premium);">
                 <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 6px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD (ACTIVA):</label>
                 <select id="premium-distancia-alarma-real" style="margin-bottom: 8px; padding: 8px; font-size: 13px;">
@@ -237,6 +246,7 @@
             </div>
         </div>
 
+        <!-- PANEL 2: REPORTES -->
         <div id="panel-reportes" class="panel">
             <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
                 <label style="color: #60a5fa;">📣 Informar Incidente Vial:</label>
@@ -251,9 +261,10 @@
             <div id="muro-reportes"></div>
         </div>
 
+        <!-- PANEL 3: PANEL DEL CHOFER (100% GRATUITO) -->
         <div id="panel-choferes" class="panel">
             <div style="background: rgba(15,118,110,0.1); border: 1px solid var(--success); border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size:12px;">
-                <label style="display:none;"></label> 🟢 <strong>Módulo Conductor Activado Gratuitamente.</strong> Al encender la transmisión, tu ubicación se enviará al mapa global para los vecinos. ¡Gracias por conectar María Pinto!
+                🟢 <strong>Módulo Conductor Activado Gratuitamente.</strong> Al encender la transmisión, tu ubicación se enviará al mapa global para los vecinos. ¡Gracias por conectar María Pinto!
             </div>
 
             <label id="lbl-selector-servicio-chofer">Línea o Recorrido Actual:</label>
@@ -292,6 +303,7 @@
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
         </div>
 
+        <!-- PANEL 4: HORARIOS GENERALES -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
                 <button class="sub-btn active" id="sbtn-santiago" onclick="switchSubTab('santiago')">🚍 Interurbanos / Los Rulos</button>
@@ -379,6 +391,7 @@
         <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
+    <!-- PANTALLA ADMINISTRADOR -->
     <div id="admin-master-panel">
         <h2 style="font-size: 18px; text-align: center; color: #3b82f6; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">🛠️ Panel de Control Maestro (Matías)</h2>
         
@@ -415,8 +428,13 @@
     };
     
     // Inicializar Firebase de forma segura
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let db = null;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch(e) {
+        console.error("Error al inicializar Firebase: ", e);
+    }
 
     let alarmaIniciada = false;
     let miGpsWatchId = null;
@@ -425,7 +443,7 @@
     
     let mapaLeaflet = null;
     let marcadorUsuario = null;
-    let marcadoresChoferes = {}; // Colección de vehículos activos en la nube
+    let marcadoresChoferes = {}; 
 
     const LAT_MP = -33.5235;
     const LON_MP = -71.2185;
@@ -726,15 +744,16 @@
                     }
                     mapaLeaflet.setView([lat, lon], 14);
 
-                    // Envío directo a Firebase Realtime Database
-                    db.ref('conductores/' + choferId).set({
-                        nombre: localStorage.getItem('conecta_mp_user') || 'Chofer Conecta',
-                        lat: lat,
-                        lon: lon,
-                        asientos: cupos,
-                        texto: document.getElementById('live-driver-status') ? document.getElementById('live-driver-status').innerText : "En ruta",
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
+                    if(db) {
+                        db.ref('conductores/' + choferId).set({
+                            nombre: localStorage.getItem('conecta_mp_user') || 'Chofer Conecta',
+                            lat: lat,
+                            lon: lon,
+                            asientos: cupos,
+                            texto: document.getElementById('live-driver-status') ? document.getElementById('live-driver-status').innerText : "En ruta",
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
                 },
                 (err) => { statusDiv.innerText = "⚠️ Transmitiendo posición manual estimada."; },
                 { enableHighAccuracy: true }
@@ -747,6 +766,7 @@
 
     // 🛰️ ESCUCHA EN TIEMPO REAL DESDE LA NUBE
     function escucharChoferesEnTiempoReal() {
+        if(!db) return;
         db.ref('conductores').on('value', (snapshot) => {
             const esPremium = localStorage.getItem('conecta_mp_premium') === 'activo';
             if (!esPremium || mapaLeaflet === null) return;
@@ -757,7 +777,6 @@
             for (let id in datosConductores) {
                 const driver = datosConductores[id];
 
-                // Filtrar transmisiones viejas (más de 3 minutos sin señal se asume fuera de línea)
                 if (tiempoActual - driver.timestamp < 180000) {
                     if (marcadoresChoferes[id]) {
                         marcadoresChoferes[id].setLatLng([driver.lat, driver.lon]);
@@ -803,6 +822,7 @@
 
     // 📣 ENVIAR REPORTES DIRECTO A LA NUBE
     function publicarReporte() {
+        if(!db) return;
         const texto = document.getElementById('report-text').value.trim();
         const tipo = document.getElementById('report-type').value;
         if(texto === "") return alert("Escribe un mensaje para el muro de incidentes.");
@@ -819,8 +839,9 @@
         document.getElementById('report-text').value = "";
     }
 
-    // 🖥️ ESCUCHAR REPORTES DESDE LA NUBE EN TIEMPO REAL
+    // 🖥️ ESCUCHAR REPORTES DESDE LA NUBE EN TIEMLE REAL
     function escucharReportesComunitarios() {
+        if(!db) return;
         db.ref('reportes').limitToLast(20).on('value', (snapshot) => {
             const contenedor = document.getElementById('muro-reportes');
             if(!contenedor) return;
@@ -884,6 +905,7 @@
     }
 
     function limpiarTodosLosReportesAdmin() {
+        if(!db) return;
         if(confirm("¿Estás seguro de vaciar el historial de la nube de Firebase?")) {
             db.ref('reportes').remove();
             alert("Muro de la nube vaciado con éxito.");
