@@ -143,12 +143,12 @@
         </select>
         
         <div id="info-rol-gratis" style="display:none; background: rgba(15,118,110,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 14px; color: #2dd4bf;">
-            💡 <strong>¡Socio Conductor!</strong> Tu perfil de transmisión es completamente gratis para que ayudes a mantener conectada a la comuna.
+            💡 <strong>¡Socio Conductor!</strong> Tu perfil de transmisión es completely gratis para que ayudes a mantener conectada a la comuna.
         </div>
 
         <button class="btn btn-ingreso" onclick="ingresoForzado()">ENTRAR A LA APP</button>
         
-        <div class="premium-marketing-card" id="login-marketing-box">
+        <div class="premium-marketing-card" id="login-marketing-box" style="display: none;">
             <span style="font-size: 20px;">👑 Perfil Pasajero Premium</span>
             <div class="premium-price-tag">$1.500 <span style="font-size:12px; font-weight:normal; color:white;">/ mes</span></div>
             <ul class="benefit-list">
@@ -195,7 +195,7 @@
             
             <!-- Zona del Mapa Leaflet Real -->
             <div class="premium-blur-zone">
-                <div class="premium-overlay" id="premium-lock">
+                <div class="premium-overlay" id="premium-lock" style="display: none;">
                     <span style="font-size: 26px; margin-bottom: 4px;">👑</span>
                     <div style="font-weight: 800; font-size: 15px; color: white; text-transform: uppercase;">Rastreador Satelital Activo</div>
                     <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 12px 0; max-width: 280px;">
@@ -210,11 +210,11 @@
             </div>
             
             <center><div class="status-badge" id="gps-coords">Ubicación del Vecino No Fijada</div></center>
-            <div style="text-align:center; font-size:12px; color:#60a5fa; margin:10px 0; font-weight: 600;" id="live-driver-status">Conéctate Premium para recibir telemetría...</div>
+            <div style="text-align:center; font-size:12px; color:#60a5fa; margin:10px 0; font-weight: 600;" id="live-driver-status">Escuchando telemetría en tiempo real...</div>
             <img id="passenger-view-photo" class="vehicle-photo-preview" alt="Foto del vehículo en ruta">
 
             <!-- Características Adicionales con Vitrina de Venta -->
-            <div class="premium-showcase-box" id="showcase-alarma">
+            <div class="premium-showcase-box" id="showcase-alarma" style="display: none;">
                 <div class="lock-badge">PREMIUM</div>
                 <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 4px;">🔔 ALARMA ACÚSTICA DE PARADERO:</label>
                 <select id="premium-distancia-alarma" disabled style="margin-bottom: 6px; padding: 6px; font-size: 12px; opacity:0.6;">
@@ -224,15 +224,15 @@
                 <button class="btn" style="padding: 8px; font-size: 12px; margin-bottom: 0; background: #334155; color:var(--text-muted);" onclick="alertarBloqueoPremium()">🔕 Activar Alerta Sonora ($1.500/mes)</button>
             </div>
 
-            <div class="premium-showcase-box" id="showcase-seguridad" style="margin-top: 10px;">
+            <div class="premium-showcase-box" id="showcase-seguridad" style="display: none;">
                 <div class="lock-badge">PREMIUM</div>
                 <label style="color: #2563eb; font-size: 12px; font-weight: bold; margin-bottom: 4px;">🚨 COMPARTIR RUTA COMPLETA DE SEGURIDAD:</label>
                 <button class="btn" style="background: #334155; padding: 8px; font-size: 12px; margin-bottom: 0; color:var(--text-muted);" onclick="alertarBloqueoPremium()">✳️ Enviar Enlace de Monitoreo por WhatsApp</button>
             </div>
             
             <!-- Controles Reales Ocultos que se encienden al pagar -->
-            <div id="controles-premium-activos" style="display: none; margin-top: 12px; background: rgba(245,158,11,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--gold-premium);">
-                <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 6px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD (ACTIVA):</label>
+            <div id="controles-premium-activos" style="display: block; margin-top: 12px; background: rgba(245,158,11,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--gold-premium);">
+                <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 6px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD (MARCHA BLANCA):</label>
                 <select id="premium-distancia-alarma-real" style="margin-bottom: 8px; padding: 8px; font-size: 13px;">
                     <option value="1.0">Avisar cuando esté a 1.0 km (Ideal Colectivos)</option>
                     <option value="2.5">Avisar cuando esté a 2.5 km (Ideal Liebres/Autos)</option>
@@ -449,16 +449,9 @@
     const LON_MP = -71.2185;
 
     window.onload = function() {
-        const parametrosUrl = new URLSearchParams(window.location.search);
-        if (parametrosUrl.get('pago') === 'exitoso' || parametrosUrl.get('status') === 'approved') {
-            localStorage.setItem('conecta_mp_premium', 'activo');
-            alert("👑 ¡Plan Pasajero Premium Activado! Gracias por tu suscripción.");
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        if (localStorage.getItem('conecta_mp_premium') === 'activo') {
-            activarModoPremiumVisual();
-        }
+        // ACTIVACIÓN AUTOMÁTICA DE MARCHA BLANCA PREMIUM GLOBAL
+        localStorage.setItem('conecta_mp_premium', 'activo');
+        activarModoPremiumVisual();
 
         const usuarioGuardado = localStorage.getItem('conecta_mp_user');
         const rolGuardado = localStorage.getItem('conecta_mp_role');
@@ -514,7 +507,7 @@
         const mktBox = document.getElementById('login-marketing-box');
         if (val === 'pasajeros') {
             if(box) box.style.display = 'none';
-            if(mktBox) mktBox.style.display = 'block';
+            if(mktBox) mktBox.style.display = 'none'; // Oculto por marcha blanca
         } else {
             if(box) box.style.display = 'block';
             if(mktBox) mktBox.style.display = 'none';
@@ -598,7 +591,7 @@
     }
 
     function alertarBloqueoPremium() {
-        alert("👑 Función Premium\n\nEsta característica requiere el plan Pasajero Premium de $1.500 mensuales. Puedes activarlo usando el botón de Mercado Pago.");
+        alert("👑 Modo Marcha Blanca Activo\n\nTodas las funciones están liberadas temporalmente.");
     }
 
     function activarModoPremiumVisual() {
@@ -615,14 +608,8 @@
     }
 
     function ingresarCodigoManual() {
-        const input = prompt("Ingresa código de activación manual:");
-        if (input === "MP1500" || input === "MARIAPINTO") {
-            localStorage.setItem('conecta_mp_premium', 'activo');
-            alert("👑 ¡Acceso Premium Activado!");
-            location.reload();
-        } else if(input !== null) {
-            alert("Código inválido.");
-        }
+        localStorage.setItem('conecta_mp_premium', 'activo');
+        location.reload();
     }
 
     function cerrarSesion() {
@@ -768,8 +755,7 @@
     function escucharChoferesEnTiempoReal() {
         if(!db) return;
         db.ref('conductores').on('value', (snapshot) => {
-            const esPremium = localStorage.getItem('conecta_mp_premium') === 'activo';
-            if (!esPremium || mapaLeaflet === null) return;
+            if (mapaLeaflet === null) return;
 
             const datosConductores = snapshot.val();
             const tiempoActual = Date.now();
