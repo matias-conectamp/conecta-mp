@@ -78,6 +78,7 @@
         .btn-ingreso { background: linear-gradient(135deg, #2563eb, #1d4ed8); font-size: 17px; padding: 16px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); border: 1px solid rgba(255,255,255,0.1); }
         .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.3); color: white; }
         .btn-green { background: var(--success); }
+        .btn-danger { background: var(--danger); }
         
         /* Visualizador de Foto Vehículo */
         .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); display: none; }
@@ -103,6 +104,10 @@
         .admin-box { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
         .admin-box h3 { font-size: 14px; color: #3b82f6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         
+        /* Lista Admin en Línea */
+        .admin-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-mini-del { background: var(--danger); border: none; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
         /* Modal Ventana Explicativa Premium */
         .premium-marketing-card { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--gold-premium); border-radius: 16px; padding: 16px; margin: 15px 0; text-align: center; display: block; }
         .premium-price-tag { font-size: 26px; font-weight: 800; color: var(--gold-premium); margin: 8px 0; }
@@ -143,7 +148,7 @@
         </select>
         
         <div id="info-rol-gratis" style="display:none; background: rgba(15,118,110,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 14px; color: #2dd4bf;">
-            💡 <strong>¡Socio Conductor!</strong> Tu perfil de transmisión es completely gratis para que ayudes a mantener conectada a la comuna.
+            💡 <strong>¡Socio Conductor!</strong> Tu perfil de transmisión es completamente gratis para que ayudes a mantener conectada a la comuna.
         </div>
 
         <button class="btn btn-ingreso" onclick="ingresoForzado()">ENTRAR A LA APP</button>
@@ -189,7 +194,8 @@
                 
                 <textarea id="msg-pasajero" rows="1" placeholder="Nota de paradero o destino solicitado..."></textarea>
                 
-                <button class="btn btn-blue" style="margin-bottom: 0; padding: 10px; font-size: 13px;" onclick="enviarAlertaPasajero()">📍 Marcar Mi Ubicación en el Mapa</button>
+                <button class="btn btn-blue" style="margin-bottom: 0; padding: 10px; font-size: 13px;" id="btn-marcar-gps" onclick="enviarAlertaPasajero()">📍 Marcar Mi Ubicación en el Mapa</button>
+                <button class="btn btn-danger" style="display: none; margin-top: 8px; padding: 10px; font-size: 13px;" id="btn-quitar-gps" onclick="quitarMiUbicacionManual()">❌ Quitar Mi Ubicación (Ya subí al viaje)</button>
                 <div id="pasajero-gps-local-status" style="text-align:center; font-size:11px; margin-top:6px; color:#cbd5e1;"></div>
             </div>
             
@@ -401,6 +407,17 @@
             <button class="btn" style="background: #475569; font-size: 13px; padding: 10px;" onclick="cambiarClaveMaestraAdmin()">⚙️ Cambiar Contraseña Admin</button>
         </div>
 
+        <!-- NUEVO: SECCIONES DE GESTIÓN EN VIVO DESDE EL FONO -->
+        <div class="admin-box">
+            <h3>🚗 Choferes Transmitiendo Activos</h3>
+            <div id="admin-list-choferes" style="max-height: 120px; overflow-y: auto; margin-top: 5px;"></div>
+        </div>
+
+        <div class="admin-box">
+            <h3>📱 Pasajeros en Espera en el Mapa</h3>
+            <div id="admin-list-pasajeros" style="max-height: 120px; overflow-y: auto; margin-top: 5px;"></div>
+        </div>
+
         <div class="admin-box">
             <h3>⚠️ Gestión de Alertas</h3>
             <button class="btn" style="background: var(--danger); font-size: 13px; padding: 10px; margin-bottom: 8px;" onclick="limpiarTodosLosReportesAdmin()">🗑️ Borrar Muro de Reportes</button>
@@ -444,12 +461,12 @@
     let mapaLeaflet = null;
     let marcadorUsuario = null;
     let marcadoresChoferes = {}; 
+    let marcadoresPasajeros = {};
 
     const LAT_MP = -33.5235;
     const LON_MP = -71.2185;
 
     window.onload = function() {
-        // ACTIVACIÓN AUTOMÁTICA DE MARCHA BLANCA PREMIUM GLOBAL
         localStorage.setItem('conecta_mp_premium', 'activo');
         activarModoPremiumVisual();
 
@@ -481,6 +498,7 @@
             }).addTo(mapaLeaflet);
 
             escucharChoferesEnTiempoReal();
+            escucharPasajerosEnTiempoReal();
             
             setTimeout(() => { mapaLeaflet.invalidateSize(); }, 300);
         } catch (e) {
@@ -507,7 +525,7 @@
         const mktBox = document.getElementById('login-marketing-box');
         if (val === 'pasajeros') {
             if(box) box.style.display = 'none';
-            if(mktBox) mktBox.style.display = 'none'; // Oculto por marcha blanca
+            if(mktBox) mktBox.style.display = 'none';
         } else {
             if(box) box.style.display = 'block';
             if(mktBox) mktBox.style.display = 'none';
@@ -665,9 +683,12 @@
         if(dPreview) { dPreview.src = base64Data; dPreview.style.display = 'block'; }
     }
 
+    // 📱 ENVIAR ALERTA DE PASAJERO CON ID UNICO EN LA NUBE
     function enviarAlertaPasajero() {
         const statusText = document.getElementById('pasajero-gps-local-status');
         const coordsBadge = document.getElementById('gps-coords');
+        const tel = localStorage.getItem('conecta_mp_phone') || "000";
+        const idPasajero = tel.replace(/[^0-9]/g, "");
         
         if (navigator.geolocation) {
             statusText.innerText = "🛰️ Conectando con antena GPS móvil...";
@@ -681,19 +702,36 @@
                         coordsBadge.innerText = `Mi Ubicación -> Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
                     }
 
+                    // Cambiar visibilidad de botones
+                    document.getElementById('btn-marcar-gps').style.display = 'none';
+                    document.getElementById('btn-quitar-gps').style.display = 'flex';
+
+                    const servicio = document.getElementById('select-servicio').value;
+                    const msg = document.getElementById('msg-pasajero').value.trim();
+                    const bultos = document.getElementById('check-equipaje').checked ? " (Con equipaje grande)" : "";
+                    const nombreVecino = localStorage.getItem('conecta_mp_user') || 'Vecino';
+
+                    // Enviar datos reales a Firebase
+                    if (db) {
+                        db.ref('pasajeros/' + idPasajero).set({
+                            nombre: nombreVecino,
+                            lat: lat,
+                            lon: lon,
+                            nota: `${msg || 'Esperando transporte.'}${bultos}`,
+                            servicio: servicio,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                    
                     if (marcadorUsuario) {
                         marcadorUsuario.setLatLng([lat, lon]);
                     } else {
                         marcadorUsuario = L.marker([lat, lon]).addTo(mapaLeaflet)
-                            .bindPopup("<b>Estás aquí esperando transporte</b>").openPopup();
+                            .bindPopup(`<b>${nombreVecino}</b><br>Esperando: ${servicio}`).openPopup();
                     }
                     mapaLeaflet.setView([lat, lon], 14);
                     
-                    const servicio = document.getElementById('select-servicio').value;
-                    const msg = document.getElementById('msg-pasajero').value.trim();
-                    const bultos = document.getElementById('check-equipaje').checked ? " con equipaje grande" : "";
-                    
-                    alert(`📍 ¡Ubicación Enviada!\n\nHas informado tu presencia en la ruta para el servicio [${servicio}]${bultos}.\nNota: ${msg || 'Esperando transporte.'}`);
+                    alert(`📍 ¡Ubicación Enviada!\n\nHas informado tu presencia en la ruta. El sistema limpiará automáticamente tu marca en 30 minutos o puedes quitarla de forma manual con el botón rojo.`);
                 },
                 (err) => {
                     statusText.innerText = "❌ Permiso de GPS denegado por el teléfono.";
@@ -703,6 +741,26 @@
             );
         } else {
             statusText.innerText = "❌ Este teléfono no soporta localización.";
+        }
+    }
+
+    // ELIMINAR UBICACIÓN MANUALMENTE CUANDO EMPIEZA EL VIAJE
+    function quitarMiUbicacionManual() {
+        const tel = localStorage.getItem('conecta_mp_phone') || "000";
+        const idPasajero = tel.replace(/[^0-9]/g, "");
+        
+        if (db) {
+            db.ref('pasajeros/' + idPasajero).remove().then(() => {
+                if (marcadorUsuario) {
+                    mapaLeaflet.removeLayer(marcadorUsuario);
+                    marcadorUsuario = null;
+                }
+                document.getElementById('btn-quitar-gps').style.display = 'none';
+                document.getElementById('btn-marcar-gps').style.display = 'flex';
+                document.getElementById('pasajero-gps-local-status').innerText = "Ubicación removida del mapa.";
+                document.getElementById('gps-coords').innerText = "Ubicación del Vecino No Fijada";
+                alert("✅ ¡Buen viaje! Tu ubicación se eliminó del mapa comunal.");
+            });
         }
     }
 
@@ -722,14 +780,6 @@
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     statusDiv.innerText = `🛰️ En Línea - Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                    
-                    if (marcadorUsuario) {
-                        marcadorUsuario.setLatLng([lat, lon]);
-                    } else {
-                        marcadorUsuario = L.marker([lat, lon]).addTo(mapaLeaflet)
-                            .bindPopup("<b>Transmitiendo tu Ruta en Vivo</b>").openPopup();
-                    }
-                    mapaLeaflet.setView([lat, lon], 14);
 
                     if(db) {
                         db.ref('conductores/' + choferId).set({
@@ -751,7 +801,7 @@
         }
     }
 
-    // 🛰️ ESCUCHA EN TIEMPO REAL DESDE LA NUBE
+    // 🛰️ ESCUCHA EN TIEMPO REAL DESDE LA NUBE CHOFERES
     function escucharChoferesEnTiempoReal() {
         if(!db) return;
         db.ref('conductores').on('value', (snapshot) => {
@@ -763,6 +813,7 @@
             for (let id in datosConductores) {
                 const driver = datosConductores[id];
 
+                // Filtro para eliminar del mapa si no transmite hace más de 3 minutos
                 if (tiempoActual - driver.timestamp < 180000) {
                     if (marcadoresChoferes[id]) {
                         marcadoresChoferes[id].setLatLng([driver.lat, driver.lon]);
@@ -770,14 +821,58 @@
                         marcadoresChoferes[id] = L.marker([driver.lat, driver.lon]).addTo(mapaLeaflet);
                     }
                     marcadoresChoferes[id].bindPopup(`<b>${driver.texto}</b>`);
-                    
-                    document.getElementById('live-driver-status').innerText = driver.texto;
-                    document.getElementById('gps-coords').innerText = `Vehículo Activo -> Lat: ${driver.lat.toFixed(4)}, Lon: ${driver.lon.toFixed(4)}`;
                 } else {
                     if (marcadoresChoferes[id]) {
                         mapaLeaflet.removeLayer(marcadoresChoferes[id]);
                         delete marcadoresChoferes[id];
                     }
+                }
+            }
+        });
+    }
+
+    // ESCUCHA EN TIEMPO REAL PASAJEROS (Y Auto-limpieza de 30 minutos)
+    function escucharPasajerosEnTiempoReal() {
+        if(!db) return;
+        db.ref('pasajeros').on('value', (snapshot) => {
+            if (mapaLeaflet === null) return;
+            const datosPasajeros = snapshot.val();
+            const tiempoActual = Date.now();
+
+            for (let id in datosPasajeros) {
+                const pas = datosPasajeros[id];
+
+                // Auto-limpieza: Si pasaron más de 30 minutos (1.800.000 ms), se borra solo de Firebase
+                if (tiempoActual - pas.timestamp > 1800000) {
+                    db.ref('pasajeros/' + id).remove();
+                    if (marcadoresPasajeros[id]) {
+                        mapaLeaflet.removeLayer(marcadoresPasajeros[id]);
+                        delete marcadoresPasajeros[id];
+                    }
+                    continue;
+                }
+
+                if (marcadoresPasajeros[id]) {
+                    marcadoresPasajeros[id].setLatLng([pas.lat, pas.lon]);
+                } else {
+                    // Círculo rojo o marcador distinto para diferenciar pasajeros en el mapa
+                    marcadoresPasajeros[id] = L.circleMarker([pas.lat, pas.lon], {
+                        radius: 10,
+                        fillColor: "#ef4444",
+                        color: "#ffffff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(mapaLeaflet);
+                }
+                marcadoresPasajeros[id].bindPopup(`<b>👤 Vecino esperando:</b> ${pas.nombre}<br><b>Línea:</b> ${pas.servicio}<br><b>Nota:</b> ${pas.nota}`);
+            }
+
+            // Quitar del mapa local si alguien fue borrado de Firebase
+            for (let id in marcadoresPasajeros) {
+                if (!datosPasajeros || !datosPasajeros[id]) {
+                    mapaLeaflet.removeLayer(marcadoresPasajeros[id]);
+                    delete marcadoresPasajeros[id];
                 }
             }
         });
@@ -806,7 +901,6 @@
         window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
 
-    // 📣 ENVIAR REPORTES DIRECTO A LA NUBE
     function publicarReporte() {
         if(!db) return;
         const texto = document.getElementById('report-text').value.trim();
@@ -825,7 +919,6 @@
         document.getElementById('report-text').value = "";
     }
 
-    // 🖥️ ESCUCHAR REPORTES DESDE LA NUBE EN TIEMLE REAL
     function escucharReportesComunitarios() {
         if(!db) return;
         db.ref('reportes').limitToLast(20).on('value', (snapshot) => {
@@ -852,6 +945,7 @@
         });
     }
 
+    // PANEL ADMINISTRADOR EN EL CELULAR CON ESCUCHA EN VIVO Y CONTROL DE BORRADO
     function abrirAdminMaestro() {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'none';
@@ -864,6 +958,53 @@
             <strong>Rol Activo:</strong> ${localStorage.getItem('conecta_mp_role') || 'Ninguno'}<br>
             <strong>Plan Premium:</strong> ${localStorage.getItem('conecta_mp_premium') === 'activo' ? '👑 HABILITADO' : '❌ INACTIVO'}
         `;
+
+        if (db) {
+            // Cargar y listar Choferes en el panel
+            db.ref('conductores').on('value', (snap) => {
+                const listDiv = document.getElementById('admin-list-choferes');
+                const data = snap.val();
+                if (!data) { listDiv.innerHTML = "<p style='color:gray; font-size:11px;'>No hay choferes en ruta.</p>"; return; }
+                
+                let html = "";
+                for (let id in data) {
+                    html += `
+                        <div class="admin-list-item">
+                            <span>🚗 ${data[id].nombre} (${id})</span>
+                            <button class="btn-mini-del" onclick="eliminarNodoAdmin('conductores', '${id}')">Eliminar</button>
+                        </div>
+                    `;
+                }
+                listDiv.innerHTML = html;
+            });
+
+            // Cargar y listar Pasajeros en el panel
+            db.ref('pasajeros').on('value', (snap) => {
+                const listDiv = document.getElementById('admin-list-pasajeros');
+                const data = snap.val();
+                if (!data) { listDiv.innerHTML = "<p style='color:gray; font-size:11px;'>No hay pasajeros esperando.</p>"; return; }
+                
+                let html = "";
+                for (let id in data) {
+                    html += `
+                        <div class="admin-list-item">
+                            <span>👤 ${data[id].nombre} - Recorrido: ${data[id].servicio}</span>
+                            <button class="btn-mini-del" onclick="eliminarNodoAdmin('pasajeros', '${id}')">Eliminar</button>
+                        </div>
+                    `;
+                }
+                listDiv.innerHTML = html;
+            });
+        }
+    }
+
+    // Función para borrar choferes o vecinos desde el panel del fono
+    function eliminarNodoAdmin(nodo, id) {
+        if (confirm(`¿Estás seguro de eliminar este registro del mapa?`)) {
+            db.ref(`${nodo}/${id}`).remove().then(() => {
+                alert("Registro eliminado con éxito de la nube.");
+            });
+        }
     }
 
     function salirDelPanelAdmin() {
