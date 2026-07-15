@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conecta MP - Nube Real</title>
     
+    <!-- Leaflet.js para el Mapa Real -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- Scripts de Firebase (Librerías oficiales en la nube) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -29,14 +31,17 @@
         
         .container { width: 100%; max-width: 480px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); position: relative; }
         
+        /* Encabezado */
         .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 24px; gap: 8px; }
-        .brand-logo { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); border-radius: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); font-size: 24px; color: white; cursor: pointer; user-select: none; }
+        .brand-logo { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); border-radius: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); font-size: 24px; color: white; cursor: pointer; user-select: none; -webkit-user-select: none; }
         .brand-title { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
+        /* Pantallas y Paneles */
         #auth-screen { display: block; }
         #main-app-content { display: none; } 
         #admin-master-panel { display: none; background: #0f172a; border-radius: 16px; padding: 16px; border: 2px solid #3b82f6; margin-top: 15px; }
 
+        /* Navegación */
         .tabs { display: flex; gap: 4px; background: #0f172a; padding: 4px; border-radius: 14px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .tab-btn { flex: 1; padding: 12px 4px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; color: var(--text-muted); font-size: 11px; transition: all 0.2s ease; }
         .tab-btn.active { background: var(--bg-card); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -45,52 +50,72 @@
         .panel { display: none; margin-bottom: 15px; }
         .panel.active { display: block; }
         
+        /* Formularios */
         label { font-size: 13px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 6px; }
         select, textarea, input[type="text"], input[type="tel"], input[type="number"] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; font-size: 15px; background-color: #0f172a; color: white; transition: all 0.2s; }
+        select:focus, textarea:focus, input:focus { outline: none; border-color: var(--blue-glow); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
         
+        /* Vitrina / Bloqueo Premium */
         .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
         .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(5px); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        
+        .premium-showcase-box { background: rgba(30, 41, 59, 0.7); border: 1px dashed var(--gold-premium); border-radius: 12px; padding: 12px; margin-top: 10px; position: relative; }
+        .lock-badge { position: absolute; top: -10px; right: 10px; background: var(--gold-premium); color: #000; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 8px; }
+
+        /* Contenedor del Mapa Real */
         #map { height: 230px; width: 100%; border-radius: 16px; border: 2px solid #1e3a8a; box-shadow: 0 8px 16px rgba(0,0,0,0.4); z-index: 1; }
         .status-badge { display: inline-block; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 10px; text-align: center; }
         
+        /* Muro de Reportes */
         .report-card { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--blue-accent); }
         .report-card.danger { border-left-color: var(--danger); }
         .report-card.warning { border-left-color: var(--warning); }
         .report-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: bold; }
         .report-body { font-size: 14px; color: #e2e8f0; font-weight: 500; }
 
+        /* Botones */
         .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 15px; margin-bottom: 12px; transition: all 0.2s; }
-        .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); }
-        .btn-ingreso { background: linear-gradient(135deg, #2563eb, #1d4ed8); font-size: 17px; padding: 16px; margin-top: 10px; }
-        .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); }
+        .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-ingreso { background: linear-gradient(135deg, #2563eb, #1d4ed8); font-size: 17px; padding: 16px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.3); color: white; }
         .btn-green { background: var(--success); }
         .btn-danger { background: var(--danger); }
         
-        .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: none; }
+        /* Visualizador de Foto Vehículo */
+        .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); display: none; }
         
+        /* Contador Choferes */
         .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
         .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 24px; font-weight: bold; color: white; cursor: pointer; background: #0f172a; }
         .count-display { font-size: 42px; font-weight: 800; color: white; }
         
+        /* Tablas de Horarios */
         .sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
         .sub-btn { flex: 1; min-width: 100px; padding: 10px 4px; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
-        .sub-btn.active { background: var(--blue-accent); color: white; }
+        .sub-btn.active { background: var(--blue-accent); color: white; border-color: var(--blue-accent); }
         
         .table-container { display: none; max-height: 420px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
         .table-container.active { display: block; }
         
         table { width: 100%; border-collapse: collapse; font-size: 12px; background: #0f172a; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; }
-        th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; }
-        .note-badge { background: #334155; color: #cbd5e1; padding: 2px 5px; border-radius: 4px; font-size: 9px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; vertical-align: top; }
+        th { background: #1e293b; color: white; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.1); font-size: 11px; text-transform: uppercase; }
+        .note-badge { background: #334155; color: #cbd5e1; padding: 2px 5px; border-radius: 4px; font-size: 9px; display: inline-block; margin-top: 2px; }
 
         .admin-box { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
+        .admin-box h3 { font-size: 14px; color: #3b82f6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        
+        /* Lista Admin en Línea */
         .admin-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .btn-mini-del { background: var(--danger); border: none; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-        /* NUEVOS ESTILOS PARA LA LISTA DE PASAJEROS */
-        #lista-pasajeros-chofer { background: white; padding: 12px; margin-top: 15px; border-radius: 12px; color: #1e293b; max-height: 300px; overflow-y: auto; display: none; }
+        /* Modal Ventana Explicativa Premium */
+        .premium-marketing-card { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--gold-premium); border-radius: 16px; padding: 16px; margin: 15px 0; text-align: center; display: block; }
+        .premium-price-tag { font-size: 26px; font-weight: 800; color: var(--gold-premium); margin: 8px 0; }
+        .benefit-list { text-align: left; font-size: 13px; margin: 12px 0; line-height: 1.6; color: #cbd5e1; }
+        .benefit-list li { margin-bottom: 6px; list-style-type: "✅ "; margin-left: 14px; }
+
+        /* Estilos para lista pasajeros chofer */
+        #lista-pasajeros-chofer { background: #fff; padding: 12px; margin-top: 15px; border-radius: 12px; color: #1e293b; max-height: 300px; overflow-y: auto; display: none; }
         .pasajero-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
     </style>
     
@@ -107,13 +132,16 @@
 
     <!-- PANTALLA 1: INGRESO -->
     <div id="auth-screen">
-        <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px;">
-            ¡Transporte en vivo para María Pinto!
+        <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px; padding: 0 10px;">
+            ¡Transporte en vivo para María Pinto! Los perfiles de Choferes son 100% gratuitos para incentivar rutas activas.
         </p>
+        
         <label for="auth-name">Nombre Completo:</label>
         <input type="text" id="auth-name" placeholder="Ej: Juan Pérez">
+
         <label for="auth-phone">Teléfono de Contacto:</label>
         <input type="tel" id="auth-phone" placeholder="Ej: +56912345678">
+
         <label for="auth-role">Tipo de Perfil Inicial:</label>
         <select id="auth-role" onchange="actualizarInfoRegistro(this.value)">
             <option value="pasajeros">📱 Pasajero / Vecino</option>
@@ -121,7 +149,23 @@
             <option value="bollenar">🚍 Chofer Buses Bollenar - Santiago (GRATIS)</option>
             <option value="particular">🚘 Chofer Auto Particular (Viaje Compartido - GRATIS)</option>
         </select>
+        
+        <div id="info-rol-gratis" style="display:none; background: rgba(15,118,110,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 14px; color: #2dd4bf;">
+            💡 <strong>¡Socio Conductor!</strong> Tu perfil de transmisión es completamente gratis para que ayudes a mantener conectada a la comuna.
+        </div>
+
         <button class="btn btn-ingreso" onclick="ingresoForzado()">ENTRAR A LA APP</button>
+        
+        <div class="premium-marketing-card" id="login-marketing-box" style="display: none;">
+            <span style="font-size: 20px;">👑 Perfil Pasajero Premium</span>
+            <div class="premium-price-tag">$1.500 <span style="font-size:12px; font-weight:normal; color:white;">/ mes</span></div>
+            <ul class="benefit-list">
+                <li>Rastreador GPS en Tiempo Real de Micros y Colectivos.</li>
+                <li>Alarma de Proximidad Sonora personalizable en paraderos.</li>
+                <li>Botón de Ruta Segura para compartir por WhatsApp.</li>
+            </ul>
+            <a href="https://mpago.la/14kajSj" class="btn btn-gold" style="font-size:13px; padding:10px; margin-bottom:0;" target="_blank">👑 Suscribirse por $1.500</a>
+        </div>
     </div>
 
     <!-- PANTALLA 2: APP COMPLETA -->
@@ -133,46 +177,122 @@
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios</button>
         </div>
 
+        <!-- PANEL 1: PASAJEROS + GPS -->
         <div id="panel-pasajeros" class="panel active">
-            <!-- (Contenido original del panel pasajeros) -->
-            <select id="select-servicio">
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 14px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <label>Selecciona Servicio a Buscar:</label>
+                <select id="select-servicio">
+                    <option value="bollenar_stgo">🚍 Buses Bollenar - Santiago (Orellana)</option>
+                    <option value="l1">Línea 1 Colectivos (Lolenco - María Pinto)</option>
+                    <option value="l2">Línea 2 Colectivos (Los Rulos - Melipilla)</option>
+                    <option value="l3">Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
+                    <option value="muni_b1">🚌 Bus Muni 1 (Lo Ovalle / Chorombo)</option>
+                    <option value="muni_b2">🚌 Bus Muni 2 (La Palma / Ibacache)</option>
+                    <option value="particular">🚘 Autos Particulares (Viajes Compartidos)</option>
+                </select>
+                
+                <label style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-weight:500; cursor:pointer; font-size:12px;">
+                    <input type="checkbox" id="check-equipaje" style="width:16px; height:16px; accent-color: var(--blue-accent);"> ¿Llevas bultos o equipaje grande?
+                </label>
+                
+                <textarea id="msg-pasajero" rows="1" placeholder="Nota de paradero o destino solicitado..."></textarea>
+                
+                <button class="btn btn-blue" style="margin-bottom: 0; padding: 10px; font-size: 13px;" id="btn-marcar-gps" onclick="enviarAlertaPasajero()">📍 Marcar Mi Ubicación en el Mapa</button>
+                <button class="btn btn-danger" style="display: none; margin-top: 8px; padding: 10px; font-size: 13px;" id="btn-quitar-gps" onclick="quitarMiUbicacionManual()">❌ Quitar Mi Ubicación (Ya subí al viaje)</button>
+                <div id="pasajero-gps-local-status" style="text-align:center; font-size:11px; margin-top:6px; color:#cbd5e1;"></div>
+            </div>
+            
+            <div class="premium-blur-zone">
+                <div class="premium-overlay" id="premium-lock" style="display: none;">
+                    <span style="font-size: 26px; margin-bottom: 4px;">👑</span>
+                    <div style="font-weight: 800; font-size: 15px; color: white; text-transform: uppercase;">Rastreador Satelital Activo</div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 12px 0; max-width: 280px;">
+                        Mira micros y colectivos moviéndose en mapa real por la comuna por solo **$1.500 mensuales**.
+                    </p>
+                    <a href="https://mpago.la/14kajSj" target="_blank" class="btn btn-gold" style="padding: 10px 16px; font-size: 13px; margin-bottom: 4px; width:auto;">👑 Activar Plan por $1.500</a>
+                    <button onclick="ingresarCodigoManual()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top:5px;">[Ingresar código de activación manual]</button>
+                </div>
+                <div id="map"></div>
+            </div>
+            
+            <center><div class="status-badge" id="gps-coords">Ubicación del Vecino No Fijada</div></center>
+            <div style="text-align:center; font-size:12px; color:#60a5fa; margin:10px 0; font-weight: 600;" id="live-driver-status">Escuchando telemetría en tiempo real...</div>
+            <img id="passenger-view-photo" class="vehicle-photo-preview" alt="Foto del vehículo en ruta">
+            
+            <div id="controles-premium-activos" style="display: block; margin-top: 12px; background: rgba(245,158,11,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--gold-premium);">
+                <label style="color: var(--gold-premium); font-size: 12px; font-weight: bold; margin-bottom: 6px;">🔔 CONFIGURACIÓN DE ALARMA PROXIMIDAD (MARCHA BLANCA):</label>
+                <select id="premium-distancia-alarma-real" style="margin-bottom: 8px; padding: 8px; font-size: 13px;">
+                    <option value="1.0">Avisar cuando esté a 1.0 km (Ideal Colectivos)</option>
+                    <option value="2.5">Avisar cuando esté a 2.5 km (Ideal Liebres/Autos)</option>
+                    <option value="5.0">Avisar cuando esté a 5.0 km (Ideal Viajes Largos)</option>
+                </select>
+                <audio id="audio-alarma" src="https://assets.mixkit.co/active_storage/sfx/911/911-84.wav" preload="auto"></audio>
+                <button class="btn btn-green" style="padding: 10px; font-size: 13px; margin-bottom: 10px;" onclick="activarAlarmaProximidad()">🔕 Iniciar Alarma de Proximidad</button>
+
+                <label style="color: #60a5fa; font-size: 12px; font-weight: bold; margin-bottom: 6px;">🚨 VIAJE SEGURO ACTIVO:</label>
+                <button class="btn" style="background: #25d366; padding: 12px; font-size: 14px; margin-bottom: 0;" onclick="compartirRutaWhatsApp()">✳️ Compartir mi Ruta con la Familia</button>
+            </div>
+        </div>
+
+        <!-- PANEL 2: REPORTES -->
+        <div id="panel-reportes" class="panel">
+            <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="color: #60a5fa;">📣 Informar Incidente Vial:</label>
+                <input type="text" id="report-text" placeholder="Ej: Taco lento ingresando a Melipilla...">
+                <select id="report-type">
+                    <option value="warning">⚠️ Retraso / Taco / Desvío</option>
+                    <option value="danger">🚨 Accidente / Panne</option>
+                    <option value="info">ℹ️ Noticia / Estado Normal</option>
+                </select>
+                <button class="btn btn-blue" style="padding:10px; font-size:14px; margin-bottom:0;" onclick="publicarReporte()">Publicar Reporte</button>
+            </div>
+            <div id="muro-reportes"></div>
+        </div>
+
+        <!-- PANEL 3: PANEL DEL CHOFER -->
+        <div id="panel-choferes" class="panel">
+            <div style="background: rgba(15,118,110,0.1); border: 1px solid var(--success); border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size:12px;">
+                🟢 <strong>Módulo Conductor Activado Gratuitamente.</strong> Al encender la transmisión, tu ubicación se enviará al mapa global para los vecinos. ¡Gracias por conectar María Pinto!
+            </div>
+
+            <label id="lbl-selector-servicio-chofer">Línea o Recorrido Actual:</label>
+            <select id="select-servicio-chofer" onchange="actualizarEstadoTextoChofer()">
                 <option value="bollenar_stgo">🚍 Buses Bollenar - Santiago (Orellana)</option>
                 <option value="l1">Línea 1 Colectivos (Lolenco - María Pinto)</option>
                 <option value="l2">Línea 2 Colectivos (Los Rulos - Melipilla)</option>
                 <option value="l3">Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
                 <option value="muni_b1">🚌 Bus Muni 1 (Lo Ovalle / Chorombo)</option>
                 <option value="muni_b2">🚌 Bus Muni 2 (La Palma / Ibacache)</option>
-                <option value="particular">🚘 Autos Particulares</option>
             </select>
-            <textarea id="msg-pasajero" rows="1" placeholder="Nota..."></textarea>
-            <button class="btn btn-blue" id="btn-marcar-gps" onclick="enviarAlertaPasajero()">📍 Marcar Mi Ubicación</button>
-            <button class="btn btn-danger" style="display:none;" id="btn-quitar-gps" onclick="quitarMiUbicacionManual()">❌ Quitar Mi Ubicación</button>
-            <div id="map"></div>
-        </div>
 
-        <div id="panel-reportes" class="panel">
-            <div id="muro-reportes"></div>
-        </div>
-
-        <div id="panel-choferes" class="panel">
-            <button class="btn btn-green" onclick="activarRutaChofer()">📡 Encender Transmisión de Ruta Gps</button>
-            <div id="chofer-gps-status"></div>
+            <div class="counter-container">
+                <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
+                <div class="count-display" id="cupos-actuales">4</div>
+                <button class="btn-count" onclick="cambiarCupo(1)">+</button>
+            </div>
+            <p style="text-align:center; font-weight:700; font-size:12px; color:var(--text-muted); text-transform: uppercase; margin-bottom: 20px;">Asientos Disponibles en el Vehículo</p>
             
-            <!-- NUEVA LISTA DE PASAJEROS -->
+            <button class="btn btn-green" onclick="activarRutaChofer()">📡 Encender Transmisión de Ruta Gps</button>
+            <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
+
+            <!-- LISTA DE PASAJEROS -->
             <div id="lista-pasajeros-chofer">
-                <h4 style="margin-bottom: 10px;">👤 Vecinos esperando:</h4>
+                <h4 style="margin-bottom: 10px; color:#1e293b;">👤 Vecinos esperando:</h4>
                 <div id="contenedor-pasajeros"></div>
             </div>
         </div>
 
+        <!-- PANEL 4: HORARIOS -->
         <div id="panel-horarios" class="panel">
-            <!-- (Contenido original horarios) -->
+            <!-- (Contenido horarios) -->
         </div>
+
+        <button class="btn" style="background:transparent; color:var(--text-muted); font-size:12px; padding:4px; margin-top:20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión Local</button>
     </div>
 
     <!-- PANTALLA ADMINISTRADOR -->
     <div id="admin-master-panel">
-        <!-- ... (Contenido admin) ... -->
+        <!-- (Contenido admin) -->
     </div>
 </div>
 
@@ -186,12 +306,32 @@
         messagingSenderId: "527911091324",
         appId: "1:527911091324:web:9a7298859107c03c23ddf9"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    
+    let db = null;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch(e) { console.error(e); }
 
-    // ... (Mantén todas tus funciones originales: switchTab, ingresoForzado, etc.)
+    let alarmaIniciada = false;
+    let miGpsWatchId = null;
+    let cupos = 4;
+    let mapaLeaflet = null;
+    let marcadoresPasajeros = {};
 
-    // NUEVA FUNCIÓN PARA LA LISTA DE CHOFERES
+    window.onload = function() {
+        // ... (Tu lógica original de carga)
+        escucharReportesComunitarios();
+    };
+
+    function inicializarMapaReal() {
+        if (mapaLeaflet !== null) return;
+        mapaLeaflet = L.map('map').setView([-33.5235, -71.2185], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(mapaLeaflet);
+        escucharChoferesEnTiempoReal();
+        escucharPasajerosEnTiempoReal();
+    }
+
     function escucharPasajerosEnTiempoReal() {
         if(!db) return;
         db.ref('pasajeros').on('value', (snapshot) => {
@@ -199,38 +339,39 @@
             const contenedor = document.getElementById('contenedor-pasajeros');
             const listaDiv = document.getElementById('lista-pasajeros-chofer');
             
-            // Lógica mapa original sigue existiendo en tu código...
-            
+            // Lógica mapa
+            if (mapaLeaflet) {
+                // ... (tu lógica original de marcadores sigue aquí)
+            }
+
+            // Lógica nueva de lista
+            if (!contenedor) return;
             if (!datosPasajeros) {
                 if(listaDiv) listaDiv.style.display = 'none';
                 return;
             }
 
             if(listaDiv) listaDiv.style.display = 'block';
-            if(contenedor) {
-                contenedor.innerHTML = ''; 
-                Object.keys(datosPasajeros).forEach(id => {
-                    const pas = datosPasajeros[id];
-                    const item = document.createElement('div');
-                    item.className = 'pasajero-item';
-                    item.innerHTML = `
-                        <div>
-                            <b>${pas.nombre}</b><br>
-                            <small>${pas.nota || 'Esperando...'}</small>
-                        </div>
-                        <a href="https://wa.me/${id}?text=Hola,%20soy%20el%20chofer%20y%20ya%20voy%20por%20ti" 
-                           target="_blank" 
-                           style="background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">
-                           Ya voy
-                        </a>
-                    `;
-                    contenedor.appendChild(item);
-                });
-            }
+            contenedor.innerHTML = ''; 
+
+            Object.keys(datosPasajeros).forEach(id => {
+                const pas = datosPasajeros[id];
+                const item = document.createElement('div');
+                item.className = 'pasajero-item';
+                item.innerHTML = `
+                    <div><b>${pas.nombre}</b><br><small>${pas.nota || 'Esperando...'}</small></div>
+                    <a href="https://wa.me/${id}?text=Hola,%20soy%20el%20chofer%20y%20ya%20voy%20por%20ti" 
+                       target="_blank" style="background:#25D366; color:white; padding:8px 12px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;">Ya voy</a>
+                `;
+                contenedor.appendChild(item);
+            });
         });
     }
 
-    // Asegúrate de llamar a escucharPasajerosEnTiempoReal() dentro de tu inicializarMapaReal()
+    // Mantén todas tus funciones anteriores aquí abajo sin cambios...
+    function ingresoForzado() { /* ... */ }
+    function switchTab(tabId) { /* ... */ }
+    // ... y el resto de tu código original
 </script>
 </body>
 </html>
