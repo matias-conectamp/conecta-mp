@@ -47,19 +47,17 @@
         .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
         .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(6px); z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 
-        /* Mapa GPS */
-        .map-container { position: relative; height: 210px; background: #090d16; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; }
-        .map-content { z-index: 2; text-align: center; width: 100%; padding: 20px; }
+        /* Mapa GPS Pasajeros y Choferes */
+        .map-container { position: relative; height: 190px; background: #090d16; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; }
+        .map-content { z-index: 2; text-align: center; width: 100%; padding: 16px; }
         .status-badge { display: inline-block; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 5px; }
         
-        /* Tarjetas de Choferes Activos */
+        /* Tarjetas de Choferes Activos / Pasajeros Esperando */
         .driver-card-active { background: #0f172a; border-radius: 14px; padding: 14px; margin-top: 10px; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .passenger-card-waiting { background: #0f172a; border-radius: 14px; padding: 14px; margin-top: 10px; border: 1px solid rgba(245, 158, 11, 0.4); border-left: 4px solid var(--warning); }
         .driver-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .driver-card-title { font-weight: 700; color: #93c5fd; font-size: 15px; }
         .badge-seats { background: #0f766e; color: #5eead4; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-        
-        /* Banner Instructivo Choferes */
-        .driver-alert-banner { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: center; font-size: 13px; color: #fef08a; line-height: 1.4; }
 
         /* Muro de Reportes */
         .report-card { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--blue-accent); }
@@ -106,6 +104,7 @@
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
+    <!-- PANTALLA DE REGISTRO E INGRESO -->
     <div id="auth-screen">
         <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-bottom:20px;">
             Ingresa tus datos para conectarte con el transporte de María Pinto.
@@ -136,6 +135,7 @@
         <a href="https://mpago.la/14kajSj" class="btn btn-mp" id="btn-link-mp" target="_blank">💳 Enlace Mercado Pago</a>
     </div>
 
+    <!-- APP PRINCIPAL -->
     <div id="main-app-content">
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
@@ -144,20 +144,20 @@
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios</button>
         </div>
 
+        <!-- PANEL PASAJEROS -->
         <div id="panel-pasajeros" class="panel active">
-            <label>Selecciona tu línea de transporte:</label>
-            <select id="select-servicio">
-                <option>Línea 1 Colectivos (Lolenco - María Pinto)</option>
-                <option>Línea 2 Colectivos (Los Rulos - Melipilla)</option>
-                <option>Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
-                <option>Buses a Santiago (Bollenar / María Pinto - Santiago)</option>
-                <option>Liebre Gratuita Municipal</option>
-                <option>Furgón Escolar</option>
-                <option>Bus Escolar</option>
-                <option>Vehículo Particular Compartido</option>
+            <label>🔍 Filtrar por transporte:</label>
+            <select id="select-servicio" onchange="renderizarChoferesActivos()">
+                <option value="todos">🌐 Todos los transportes activos</option>
+                <option value="colectivos">🚖 Colectivos (Líneas 1, 2 y 3)</option>
+                <option value="buses_santiago">🚌 Buses a Santiago (Bollenar / MP)</option>
+                <option value="liebre_muni">🚐 Liebre Gratuita Municipal</option>
+                <option value="furgon_escolar">🚐 Furgones Escolares</option>
+                <option value="bus_escolar">🚌 Buses Escolares</option>
+                <option value="particulares">🚗 Vehículos Particulares Compartidos</option>
             </select>
             
-            <textarea id="msg-pasajero" rows="2" placeholder="Nota para el chofer..."></textarea>
+            <textarea id="msg-pasajero" rows="2" placeholder="Escribe una nota para el chofer (ej: Esperando en cruce San Manuel)..."></textarea>
             
             <div class="premium-blur-zone">
                 <div class="premium-overlay" id="premium-lock">
@@ -173,23 +173,23 @@
                 <div class="map-container">
                     <div class="map-content">
                         <span style="font-size:30px;">🛰️</span>
-                        <div style="font-size: 14px; font-weight: 700; color: white;">LOCALIZACIÓN EN RUTA</div>
-                        <div class="status-badge" id="gps-coords">Buscando señal GPS...</div>
+                        <div style="font-size: 14px; font-weight: 700; color: white;">MI UBICACIÓN ACTUAL</div>
+                        <div class="status-badge" id="gps-coords">Señal de ubicación lista</div>
                         <div style="font-size:12px; color:#60a5fa; margin-top:10px;" id="live-driver-status">Cargando choferes en ruta...</div>
-                        <img id="passenger-view-photo" class="vehicle-photo-preview" alt="Foto del vehículo">
                     </div>
                 </div>
-                <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación</button>
+                <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación con Choferes</button>
             </div>
 
             <div style="margin-top: 20px;">
-                <label style="color: #93c5fd; font-size: 14px;">🚗 Vehículos Activos en Ruta:</label>
+                <label style="color: #93c5fd; font-size: 14px;">🚗 Vehículos Disponibles en Ruta:</label>
                 <div id="lista-choferes-activos">
-                    <!-- Se llena automáticamente -->
+                    <!-- Se llena automáticamente con filtro -->
                 </div>
             </div>
         </div>
 
+        <!-- PANEL REPORTES -->
         <div id="panel-reportes" class="panel">
             <div style="background: rgba(255,255,255,0.02); border-radius:14px; padding:14px; margin-bottom:16px; border: 1px solid rgba(255,255,255,0.05);">
                 <label style="color: #60a5fa;">📣 Informar Taco o Accidente:</label>
@@ -204,33 +204,43 @@
             <div id="muro-reportes"></div>
         </div>
 
+        <!-- PANEL INDEPENDIENTE PARA CHOFERES -->
         <div id="panel-choferes" class="panel">
-            <!-- BANNER INSTRUCTIVO PARA EL CHOFER -->
-            <div class="driver-alert-banner">
-                <strong>📍 Pasos para activar tu vehículo:</strong><br>
-                1. Configura tus asientos disponibles.<br>
-                2. Toca el botón verde <strong>"Transmitir Ubicación"</strong>.<br>
-                3. ¡Listo! Tu posición y teléfono aparecerán en la pestaña <strong>🛰️ GPS</strong> para todos los vecinos.
+            <!-- VISOR GPS EXCLUSIVO DEL CHOFER -->
+            <div class="map-container" style="margin-bottom: 16px; border-color: #0f766e;">
+                <div class="map-content">
+                    <span style="font-size:30px;">📡</span>
+                    <div style="font-size: 14px; font-weight: 700; color: white;">ESTADO DE TU TRANSMISIÓN</div>
+                    <div class="status-badge" id="chofer-gps-coords" style="background: rgba(15, 118, 110, 0.2); color: #5eead4; border-color: #0f766e;">GPS Desconectado</div>
+                    <div id="chofer-gps-status" style="font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 8px;">Presiona 'Transmitir Ubicación' para iniciar</div>
+                </div>
             </div>
 
+            <p style="text-align:center; font-weight:700; font-size:13px; color:#93c5fd; margin-bottom: 4px;">💺 CONTROL DE PASAJEROS</p>
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
                 <div class="count-display" id="cupos-actuales">4</div>
                 <button class="btn-count" onclick="cambiarCupo(1)">+</button>
             </div>
-            <p style="text-align:center; font-weight:700; font-size:12px; color:var(--text-muted); text-transform: uppercase; margin-bottom: 20px;">Asientos Disponibles</p>
+            <p style="text-align:center; font-weight:700; font-size:11px; color:var(--text-muted); text-transform: uppercase; margin-bottom: 16px;">Asientos Disponibles</p>
             
             <div style="background: rgba(255,255,255,0.02); padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
-                <label>📸 Foto del Vehículo:</label>
+                <label>📸 Foto de tu Vehículo (Opcional):</label>
                 <input type="file" id="driver-photo-input" accept="image/*" style="display:none;" onchange="procesarFotoChofer(this)">
-                <button class="btn" style="background:#334155; font-size:13px; padding:10px;" onclick="document.getElementById('driver-photo-input').click()">📷 Tomar/Subir Foto</button>
+                <button class="btn" style="background:#334155; font-size:13px; padding:10px;" onclick="document.getElementById('driver-photo-input').click()">📷 Tomar / Subir Foto</button>
                 <img id="driver-photo-preview" class="vehicle-photo-preview" alt="Vista previa">
             </div>
 
             <button class="btn btn-green" id="btn-activar-gps" onclick="activarRutaChofer()">📡 Transmitir Ubicación (Conectarme)</button>
             <button class="btn btn-red" id="btn-desactivar-gps" style="display:none;" onclick="desconectarChofer()">🛑 Finalizar Recorrido (Desconectarme)</button>
-            
-            <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 10px;"></div>
+
+            <!-- SECCIÓN: PASAJEROS ESPERANDO EN RUTA -->
+            <div style="margin-top: 20px;">
+                <label style="color: #fef08a; font-size: 14px;">🙋‍♂️ Pasajeros Esperando Transporte:</label>
+                <div id="lista-pasajeros-esperando">
+                    <!-- Se llena automáticamente en tiempo real -->
+                </div>
+            </div>
         </div>
 
         <!-- PANEL DE HORARIOS DETALLADOS -->
@@ -318,7 +328,11 @@
         if (foto) cargarFotosEnInterfaz(foto);
 
         renderizarChoferesActivos();
-        setInterval(renderizarChoferesActivos, 5000);
+        renderizarPasajerosEsperando();
+        setInterval(() => {
+            renderizarChoferesActivos();
+            renderizarPasajerosEsperando();
+        }, 5000);
     };
 
     function ingresoGarantizado() {
@@ -353,7 +367,6 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
         
-        // Si entra como chofer/vehículo, lo lleva directo al panel de control para activar GPS
         if (rol !== 'pasajeros') {
             switchTab('choferes');
         } else {
@@ -391,8 +404,6 @@
     function cambiarCupo(val) {
         cupos = Math.max(0, Math.min(50, cupos + val));
         document.getElementById('cupos-actuales').innerText = cupos;
-        const live = document.getElementById('live-driver-status');
-        if (live) live.innerText = `Vehículo activo: ${cupos} cupos libres`;
         
         const nombre = localStorage.getItem('conecta_mp_user');
         const rol = localStorage.getItem('conecta_mp_role');
@@ -414,11 +425,10 @@
 
     function cargarFotosEnInterfaz(base64) {
         const imgC = document.getElementById('driver-photo-preview');
-        const imgP = document.getElementById('passenger-view-photo');
         if (imgC) { imgC.src = base64; imgC.style.display = 'block'; }
-        if (imgP) { imgP.src = base64; imgP.style.display = 'block'; }
     }
 
+    /* GPS EXCLUSIVO DEL CHOFER */
     function activarRutaChofer() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -431,12 +441,14 @@
             watchGpsId = navigator.geolocation.watchPosition((p) => {
                 const lat = p.coords.latitude.toFixed(4);
                 const lon = p.coords.longitude.toFixed(4);
-                document.getElementById('chofer-gps-status').innerText = `📡 Transmitiendo en vivo: Lat ${lat}, Lon ${lon}`;
+                
+                document.getElementById('chofer-gps-coords').innerText = `Lat: ${lat} | Lon: ${lon}`;
+                document.getElementById('chofer-gps-status').innerText = `🟢 Transmitiendo en vivo para la comunidad`;
                 
                 actualizarChoferEnRegistro(nombre, true, cupos, fono, lat, lon, rol);
                 renderizarChoferesActivos();
             });
-            alert("✅ ¡En ruta! Tu vehículo ahora es visible para la comunidad. Puedes ir a la pestaña 'GPS' para ver cómo te ven los pasajeros.");
+            alert("✅ ¡Transmisión activada! Tu posición y disponibilidad ya están visibles en la app.");
         }
     }
 
@@ -447,12 +459,13 @@
         }
         document.getElementById('btn-activar-gps').style.display = 'flex';
         document.getElementById('btn-desactivar-gps').style.display = 'none';
-        document.getElementById('chofer-gps-status').innerText = "🛑 Transmisión pausada.";
+        document.getElementById('chofer-gps-coords').innerText = "GPS Desconectado";
+        document.getElementById('chofer-gps-status').innerText = "🛑 Transmisión finalizada.";
         
         const nombre = localStorage.getItem('conecta_mp_user');
         if (nombre) actualizarChoferEnRegistro(nombre, false);
         renderizarChoferesActivos();
-        alert("🛑 Te has desconectado. Ya no figuras en la lista activa.");
+        alert("🛑 Te has desconectado exitosamente.");
     }
 
     function desconectarChoferSilencioso() {
@@ -466,7 +479,7 @@
             choferes[nombre] = {
                 nombre: nombre,
                 telefono: fono || (choferes[nombre] ? choferes[nombre].telefono : ''),
-                rol: rol || (choferes[nombre] ? choferes[nombre].rol : 'Vehículo'),
+                rol: rol || (choferes[nombre] ? choferes[nombre].rol : 'particulares'),
                 asientos: asientos,
                 lat: lat,
                 lon: lon,
@@ -490,9 +503,13 @@
         }
     }
 
+    /* RENDERIZADO PARA PASAJEROS */
     function renderizarChoferesActivos() {
         const contenedor = document.getElementById('lista-choferes-activos');
         const statusHeader = document.getElementById('live-driver-status');
+        const filtroSelect = document.getElementById('select-servicio');
+        const filtro = filtroSelect ? filtroSelect.value : 'todos';
+
         if (!contenedor) return;
 
         let choferes = JSON.parse(localStorage.getItem('conecta_mp_drivers_live') || '{}');
@@ -504,6 +521,10 @@
             const d = choferes[key];
             if (ahora - d.lastUpdate > 1800000) {
                 delete choferes[key];
+                continue;
+            }
+
+            if (filtro !== 'todos' && d.rol !== filtro) {
                 continue;
             }
 
@@ -527,20 +548,82 @@
         localStorage.setItem('conecta_mp_drivers_live', JSON.stringify(choferes));
 
         if (contador === 0) {
-            contenedor.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">No hay vehículos transmitiendo en este momento.</p>`;
+            contenedor.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">No hay vehículos disponibles con este filtro en este momento.</p>`;
             if (statusHeader) statusHeader.innerText = "Esperando vehículos en ruta...";
         } else {
             contenedor.innerHTML = html;
-            if (statusHeader) statusHeader.innerText = `${contador} vehículo(s) activo(s) en ruta`;
+            if (statusHeader) statusHeader.innerText = `${contador} vehículo(s) activo(s) visibles`;
         }
     }
 
+    /* COMPARTIR UBICACIÓN DE PASAJERO Y RENDERIZADO EN PANEL CHOFER */
     function enviarAlertaPasajero() {
+        const nombre = localStorage.getItem('conecta_mp_user');
+        const fono = localStorage.getItem('conecta_mp_phone');
+        const msg = document.getElementById('msg-pasajero').value.trim();
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((p) => {
-                document.getElementById('gps-coords').innerText = `Lat: ${p.coords.latitude.toFixed(4)} | Lon: ${p.coords.longitude.toFixed(4)}`;
-                alert("📍 Ubicación actualizada en pantalla.");
+                const lat = p.coords.latitude.toFixed(4);
+                const lon = p.coords.longitude.toFixed(4);
+
+                document.getElementById('gps-coords').innerText = `Lat: ${lat} | Lon: ${lon}`;
+                
+                let pasajeros = JSON.parse(localStorage.getItem('conecta_mp_passengers_waiting') || '{}');
+                pasajeros[nombre] = {
+                    nombre: nombre,
+                    telefono: fono,
+                    nota: msg || 'Esperando transporte en ruta',
+                    lat: lat,
+                    lon: lon,
+                    lastUpdate: Date.now()
+                };
+                localStorage.setItem('conecta_mp_passengers_waiting', JSON.stringify(pasajeros));
+
+                renderizarPasajerosEsperando();
+                alert("📍 Tu ubicación y nota se enviaron a los choferes conectados.");
             });
+        }
+    }
+
+    function renderizarPasajerosEsperando() {
+        const contenedor = document.getElementById('lista-pasajeros-esperando');
+        if (!contenedor) return;
+
+        let pasajeros = JSON.parse(localStorage.getItem('conecta_mp_passengers_waiting') || '{}');
+        const ahora = Date.now();
+        let html = '';
+        let contador = 0;
+
+        for (let key in pasajeros) {
+            const p = pasajeros[key];
+            if (ahora - p.lastUpdate > 1800000) {
+                delete pasajeros[key];
+                continue;
+            }
+
+            contador++;
+            const fonoLimpio = p.telefono ? p.telefono.replace(/[^0-9]/g, '') : '';
+            const linkWsp = fonoLimpio ? `https://wa.me/${fonoLimpio}` : '#';
+
+            html += `
+                <div class="passenger-card-waiting">
+                    <div class="driver-card-header">
+                        <span class="driver-card-title" style="color:#fef08a;">📱 Pasajero: ${p.nombre}</span>
+                    </div>
+                    <p style="font-size:13px; color:#e2e8f0; margin: 4px 0; font-weight:600;">"${p.nota}"</p>
+                    <p style="font-size:11px; color:var(--text-muted);">Ubicación: Lat ${p.lat}, Lon ${p.lon}</p>
+                    ${fonoLimpio ? `<a href="${linkWsp}" target="_blank" class="btn btn-green" style="padding:6px 10px; font-size:12px; margin-top:8px;">💬 Hablar con el Pasajero</a>` : ''}
+                </div>
+            `;
+        }
+
+        localStorage.setItem('conecta_mp_passengers_waiting', JSON.stringify(pasajeros));
+
+        if (contador === 0) {
+            contenedor.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">No hay alertas de pasajeros esperando en este momento.</p>`;
+        } else {
+            contenedor.innerHTML = html;
         }
     }
 
