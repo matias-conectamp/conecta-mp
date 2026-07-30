@@ -477,7 +477,10 @@
                 enviarEstadoServidor('update_driver', true, {
                     nombre: nombre, telefono: fono, rol: rol, asientos: cupos, lat: miLatitud, lon: miLongitud
                 });
-            });
+            }, (error) => {
+                alert("⚠️ Por favor activa los permisos de GPS en tu teléfono.");
+            }, { enableHighAccuracy: true });
+            
             alert("✅ ¡Transmisión activada en la red de María Pinto!");
         }
     }
@@ -540,24 +543,28 @@
         }
     }
 
-    /* ENVÍO AL SERVIDOR CON FORM-DATA */
+    /* ENVÍO AL SERVIDOR OPTIMIZADO PARA MÓVILES (SIN BLOQUEOS CORS) */
     function enviarEstadoServidor(action, activo, payload) {
         if (!URL_GOOGLE_SHEETS) return;
 
-        const formData = new URLSearchParams();
-        formData.append('action', action);
-        formData.append('activo', activo);
+        const bodyData = new URLSearchParams();
+        bodyData.append('action', action);
+        bodyData.append('activo', activo ? "true" : "false");
         
         for (let key in payload) {
-            formData.append(key, payload[key]);
+            if (payload[key] !== undefined && payload[key] !== null) {
+                bodyData.append(key, payload[key].toString());
+            }
         }
 
         fetch(URL_GOOGLE_SHEETS, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        }).catch(err => console.log(err));
+            body: bodyData.toString()
+        })
+        .then(() => console.log("Transmisión a Apps Script enviada con éxito"))
+        .catch(err => console.error("Error transmitiendo:", err));
     }
 
     /* CONSULTAR RED EN VIVO */
