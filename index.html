@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conecta MP - Sistema Integrado</title>
+    <!-- Leaflet CSS para Mapas en Vivo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --bg-main: #0b0f19;       
@@ -47,10 +49,8 @@
         .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
         .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(6px); z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 
-        /* Mapa GPS Pasajeros y Choferes */
-        .map-container { position: relative; height: 190px; background: #090d16; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); border: 2px solid #1e3a8a; }
-        .map-content { z-index: 2; text-align: center; width: 100%; padding: 16px; }
-        .status-badge { display: inline-block; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 5px; }
+        /* MAPA INTERACTIVO REAL */
+        .map-real { height: 220px; width: 100%; border-radius: 16px; border: 2px solid #1e3a8a; margin-bottom: 10px; z-index: 1; }
         
         /* Tarjetas de Choferes Activos / Pasajeros Esperando */
         .driver-card-active { background: #0f172a; border-radius: 14px; padding: 14px; margin-top: 10px; border: 1px solid rgba(59, 130, 246, 0.3); }
@@ -170,14 +170,10 @@
                     <button onclick="ingresarCodigoManual()" style="background: transparent; border: none; color: #60a5fa; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top:5px;">[Ingresar código manual]</button>
                 </div>
 
-                <div class="map-container">
-                    <div class="map-content">
-                        <span style="font-size:30px;">🛰️</span>
-                        <div style="font-size: 14px; font-weight: 700; color: white;">MI UBICACIÓN ACTUAL</div>
-                        <div class="status-badge" id="gps-coords">Señal de ubicación lista</div>
-                        <div style="font-size:12px; color:#60a5fa; margin-top:10px;" id="live-driver-status">Cargando choferes en ruta...</div>
-                    </div>
-                </div>
+                <!-- MAPA REAL PASAJERO -->
+                <div id="map-pasajero" class="map-real"></div>
+                <div style="font-size:12px; color:#60a5fa; text-align:center; margin-bottom:10px;" id="live-driver-status">Cargando mapa en vivo...</div>
+
                 <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación con Choferes</button>
             </div>
 
@@ -206,15 +202,9 @@
 
         <!-- PANEL INDEPENDIENTE PARA CHOFERES -->
         <div id="panel-choferes" class="panel">
-            <!-- VISOR GPS EXCLUSIVO DEL CHOFER -->
-            <div class="map-container" style="margin-bottom: 16px; border-color: #0f766e;">
-                <div class="map-content">
-                    <span style="font-size:30px;">📡</span>
-                    <div style="font-size: 14px; font-weight: 700; color: white;">ESTADO DE TU TRANSMISIÓN</div>
-                    <div class="status-badge" id="chofer-gps-coords" style="background: rgba(15, 118, 110, 0.2); color: #5eead4; border-color: #0f766e;">GPS Desconectado</div>
-                    <div id="chofer-gps-status" style="font-size:12px; font-weight:bold; color:#2dd4bf; margin-top: 8px;">Presiona 'Transmitir Ubicación' para iniciar</div>
-                </div>
-            </div>
+            <!-- MAPA REAL EXCLUSIVO DEL CHOFER -->
+            <div id="map-chofer" class="map-real"></div>
+            <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-bottom: 12px;">Presiona 'Transmitir Ubicación' para iniciar GPS</div>
 
             <p style="text-align:center; font-weight:700; font-size:13px; color:#93c5fd; margin-bottom: 4px;">💺 CONTROL DE PASAJEROS</p>
             <div class="counter-container">
@@ -310,9 +300,14 @@
     <button class="btn" style="background:transparent; color:var(--text-muted); font-size:11px; margin-top:10px;" onclick="abrirAdminMaestro()">⚙️ Panel de Administración</button>
 </div>
 
+<!-- Leaflet JS para Mapas en Vivo -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
     const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbwUekqINAn8Us0BPjqp6MJI0xUY9lYFEotQQgQeh_y5unFGE4ckDnlegkd0FG8OEuKl-A/exec";
     let watchGpsId = null;
+    let mapPasajero = null, mapChofer = null;
+    let markerPasajero = null, markerChofer = null;
 
     window.onload = function() {
         const lock = document.getElementById('premium-lock');
@@ -367,16 +362,32 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
         
+        // SEPARACIÓN ESTRICTA DE PESTAÑAS
+        const btnChoferesTab = document.getElementById('btn-tab-choferes');
         if (rol !== 'pasajeros') {
+            if (btnChoferesTab) btnChoferesTab.style.display = 'block';
             switchTab('choferes');
+            setTimeout(initMapChofer, 300);
         } else {
+            if (btnChoferesTab) btnChoferesTab.style.display = 'none'; // Ocultar choferes al pasajero
             switchTab('pasajeros');
+            setTimeout(initMapPasajero, 300);
         }
     }
 
-    function ingresarCodigoManual() {
-        alert("👑 El rastreador ya se encuentra liberado y activo.");
+    function initMapPasajero() {
+        if (mapPasajero) { mapPasajero.invalidateSize(); return; }
+        mapPasajero = L.map('map-pasajero').setView([-33.518, -71.119], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapPasajero);
     }
+
+    function initMapChofer() {
+        if (mapChofer) { mapChofer.invalidateSize(); return; }
+        mapChofer = L.map('map-chofer').setView([-33.518, -71.119], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapChofer);
+    }
+
+    function ingresarCodigoManual() { alert("👑 El rastreador ya se encuentra liberado y activo."); }
 
     function cerrarSesion() {
         if (confirm("¿Cerrar sesión?")) {
@@ -391,6 +402,8 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         if (document.getElementById('panel-' + tabId)) document.getElementById('panel-' + tabId).classList.add('active');
         if (document.getElementById('btn-tab-' + tabId)) document.getElementById('btn-tab-' + tabId).classList.add('active');
+        if (tabId === 'pasajeros' && mapPasajero) setTimeout(() => mapPasajero.invalidateSize(), 200);
+        if (tabId === 'choferes' && mapChofer) setTimeout(() => mapChofer.invalidateSize(), 200);
     }
 
     function switchSubTab(subTabId) {
@@ -428,7 +441,7 @@
         if (imgC) { imgC.src = base64; imgC.style.display = 'block'; }
     }
 
-    /* GPS EXCLUSIVO DEL CHOFER */
+    /* GPS EXCLUSIVO DEL CHOFER EN MAPA REAL */
     function activarRutaChofer() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -439,16 +452,20 @@
             document.getElementById('btn-desactivar-gps').style.display = 'flex';
 
             watchGpsId = navigator.geolocation.watchPosition((p) => {
-                const lat = p.coords.latitude.toFixed(4);
-                const lon = p.coords.longitude.toFixed(4);
+                const lat = p.coords.latitude;
+                const lon = p.coords.longitude;
                 
-                document.getElementById('chofer-gps-coords').innerText = `Lat: ${lat} | Lon: ${lon}`;
-                document.getElementById('chofer-gps-status').innerText = `🟢 Transmitiendo en vivo para la comunidad`;
-                
-                actualizarChoferEnRegistro(nombre, true, cupos, fono, lat, lon, rol);
+                if (mapChofer) {
+                    mapChofer.setView([lat, lon], 15);
+                    if (markerChofer) markerChofer.setLatLng([lat, lon]);
+                    else markerChofer = L.marker([lat, lon]).addTo(mapChofer).bindPopup('<b>Tu Vehículo en Vivo</b>').openPopup();
+                }
+
+                document.getElementById('chofer-gps-status').innerText = `🟢 Transmitiendo en vivo: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
+                actualizarChoferEnRegistro(nombre, true, cupos, fono, lat.toFixed(4), lon.toFixed(4), rol);
                 renderizarChoferesActivos();
             });
-            alert("✅ ¡Transmisión activada! Tu posición y disponibilidad ya están visibles en la app.");
+            alert("✅ ¡Transmisión activada en mapa real! Tu vehículo es visible para la comunidad.");
         }
     }
 
@@ -459,7 +476,6 @@
         }
         document.getElementById('btn-activar-gps').style.display = 'flex';
         document.getElementById('btn-desactivar-gps').style.display = 'none';
-        document.getElementById('chofer-gps-coords').innerText = "GPS Desconectado";
         document.getElementById('chofer-gps-status').innerText = "🛑 Transmisión finalizada.";
         
         const nombre = localStorage.getItem('conecta_mp_user');
@@ -503,7 +519,7 @@
         }
     }
 
-    /* RENDERIZADO PARA PASAJEROS */
+    /* RENDERIZADO PARA PASAJEROS EN MAPA REAL */
     function renderizarChoferesActivos() {
         const contenedor = document.getElementById('lista-choferes-activos');
         const statusHeader = document.getElementById('live-driver-status');
@@ -552,11 +568,11 @@
             if (statusHeader) statusHeader.innerText = "Esperando vehículos en ruta...";
         } else {
             contenedor.innerHTML = html;
-            if (statusHeader) statusHeader.innerText = `${contador} vehículo(s) activo(s) visibles`;
+            if (statusHeader) statusHeader.innerText = `${contador} vehículo(s) activo(s) en mapa`;
         }
     }
 
-    /* COMPARTIR UBICACIÓN DE PASAJERO Y RENDERIZADO EN PANEL CHOFER */
+    /* COMPARTIR UBICACIÓN DE PASAJERO EN MAPA Y LISTA DE CHOFER */
     function enviarAlertaPasajero() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -564,24 +580,28 @@
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((p) => {
-                const lat = p.coords.latitude.toFixed(4);
-                const lon = p.coords.longitude.toFixed(4);
+                const lat = p.coords.latitude;
+                const lon = p.coords.longitude;
 
-                document.getElementById('gps-coords').innerText = `Lat: ${lat} | Lon: ${lon}`;
-                
+                if (mapPasajero) {
+                    mapPasajero.setView([lat, lon], 15);
+                    if (markerPasajero) markerPasajero.setLatLng([lat, lon]);
+                    else markerPasajero = L.marker([lat, lon]).addTo(mapPasajero).bindPopup('<b>Tu Ubicación Actual</b>').openPopup();
+                }
+
                 let pasajeros = JSON.parse(localStorage.getItem('conecta_mp_passengers_waiting') || '{}');
                 pasajeros[nombre] = {
                     nombre: nombre,
                     telefono: fono,
                     nota: msg || 'Esperando transporte en ruta',
-                    lat: lat,
-                    lon: lon,
+                    lat: lat.toFixed(4),
+                    lon: lon.toFixed(4),
                     lastUpdate: Date.now()
                 };
                 localStorage.setItem('conecta_mp_passengers_waiting', JSON.stringify(pasajeros));
 
                 renderizarPasajerosEsperando();
-                alert("📍 Tu ubicación y nota se enviaron a los choferes conectados.");
+                alert("📍 Tu ubicación se fijó en el mapa y se envió a los choferes en vivo.");
             });
         }
     }
