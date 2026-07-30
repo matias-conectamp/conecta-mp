@@ -1068,50 +1068,40 @@
 
     function ingresoForzado() {
 
-        const nombreInput = document.getElementById('auth-name');
+        // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbwUekqINAn8Us0BPjqp6MJI0xUY9lYFEotQQgQeh_y5unFGE4ckDnlegkd0FG8OEuKl-A/exec";
 
-        const telefonoInput = document.getElementById('auth-phone');
+function ingresoForzado() {
+    const nombre = document.getElementById('auth-name').value.trim();
+    const telefono = document.getElementById('auth-phone').value.trim();
+    const rol = document.getElementById('auth-role').value;
 
-        const rolInput = document.getElementById('auth-role');
+    if (nombre === "" || telefono === "") return alert("⚠️ Rellena todos los campos.");
 
+    // Guardar en el dispositivo
+    localStorage.setItem('conecta_mp_user', nombre);
+    localStorage.setItem('conecta_mp_phone', telefono);
+    localStorage.setItem('conecta_mp_role', rol);
 
-
-        const nombre = nombreInput.value.trim();
-
-        const telefono = telefonoInput.value.trim();
-
-        const rol = rolInput.value;
-
-
-
-        if (nombre === "" || telefono === "") {
-
-            return alert("⚠️ Por favor, escribe tu Nombre y Teléfono de contacto para ingresar.");
-
-        }
-
-
-
-        localStorage.setItem('conecta_mp_user', nombre);
-
-        localStorage.setItem('conecta_mp_phone', telefono);
-
-        localStorage.setItem('conecta_mp_role', rol);
-
-        
-
-        document.getElementById('auth-screen').style.display = 'none';
-
-        document.getElementById('main-app-content').style.display = 'block';
-
-        
-
-        configurarInterfazPorRol(rol);
-
-        inicializarMapaReal();
-
+    // ENVIAR DATOS A GOOGLE SHEETS
+    if (URL_GOOGLE_SHEETS && URL_GOOGLE_SHEETS !== "TU_URL_DE_APPS_SCRIPT_AQUI") {
+        fetch(URL_GOOGLE_SHEETS, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre: nombre,
+                telefono: telefono,
+                rol: rol
+            })
+        }).catch(err => console.log("Error al guardar en Sheets:", err));
     }
 
+    // Pasar a la app
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-app-content').style.display = 'block';
+    switchTab(rol);
+}
 
 
     function configurarInterfazPorRol(rol) {
