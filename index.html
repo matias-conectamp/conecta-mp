@@ -150,11 +150,6 @@
             color: var(--primary);
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
         /* SWITCH ROL (Pasajero / Chofer) */
         .role-selector {
             display: flex;
@@ -191,18 +186,6 @@
             z-index: 1;
         }
 
-        /* PANEL PREMIUM / ACTIVACIÓN */
-        .premium-badge {
-            background: #FEF3C7;
-            color: #92400E;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
         .status-card {
             background: #F1F5F9;
             border-left: 4px solid var(--primary);
@@ -211,7 +194,7 @@
             margin-bottom: 15px;
         }
 
-        /* LISTA DE RECTAS / CHOFERES */
+        /* LISTA DE CHOFERES */
         .driver-card {
             border: 1px solid #E2E8F0;
             border-radius: 12px;
@@ -243,7 +226,6 @@
             font-weight: 700;
         }
 
-        /* FOTO DEL VEHÍCULO */
         .vehicle-img {
             width: 100%;
             height: 140px;
@@ -256,7 +238,6 @@
             display: none !important;
         }
 
-        /* FOOTER CON INFORMACIÓN */
         footer {
             margin-top: auto;
             padding: 15px;
@@ -281,8 +262,8 @@
             <h2 style="margin-bottom: 15px; text-align: center;">Bienvenido/a</h2>
             
             <div class="role-selector">
-                <button type="button" class="role-btn active" onclick="setRole('pasajeros')">Pasajero</button>
-                <button type="button" class="role-btn" onclick="setRole('choferes')">Chofer</button>
+                <button type="button" id="btn-pasajero" class="role-btn active" onclick="setRole('pasajeros')">Pasajero</button>
+                <button type="button" id="btn-chofer" class="role-btn" onclick="setRole('choferes')">Chofer</button>
             </div>
 
             <div class="form-group">
@@ -297,20 +278,12 @@
 
             <button class="btn btn-primary" onclick="iniciarSesion()">ENTRAR A LA APP</button>
         </div>
-
-        <div style="margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--gray);">
-            <p>¿Tienes código de activación manual?</p>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <input type="text" id="manual-code" placeholder="Ingresa código" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; flex: 1;">
-                <button onclick="activarCodigoManual()" class="btn btn-accent" style="width: auto; padding: 8px 12px;">Activar</button>
-            </div>
-        </div>
     </div>
 
-    <!-- VISTA 2: PANEL PRINCIPAL (PASAJERO / CHOFER) -->
+    <!-- VISTA 2: PANEL PRINCIPAL -->
     <div id="view-main" class="view">
         <div class="status-card">
-            <span id="user-display-role" class="premium-badge">PASAJERO</span>
+            <span id="user-display-role" class="seats-pill" style="background: var(--primary); color: white;">PASAJERO</span>
             <h3 id="user-display-name">Usuario</h3>
             <p id="user-display-phone" style="font-size: 0.8rem; color: var(--gray);"></p>
         </div>
@@ -330,9 +303,12 @@
             </div>
             
             <img id="driver-photo-preview" class="vehicle-img hidden" alt="Vista previa vehículo">
+        </div>
 
-            <button class="btn btn-primary" style="margin-top: 10px;" onclick="transmitirUbicacion()">
-                📍 Transmitir mi GPS en Vivo
+        <!-- SECCIÓN GPS LIBERADA PARA TODOS -->
+        <div style="margin-bottom: 15px;">
+            <button class="btn btn-primary" onclick="transmitirUbicacion()">
+                📍 Activar mi GPS / Ver Mi Ubicación
             </button>
         </div>
 
@@ -344,16 +320,6 @@
         <h4 style="margin-bottom: 8px;">Choferes Activos / Salidas</h4>
         <div id="drivers-list">
             <!-- Se puebla dinámicamente -->
-        </div>
-
-        <!-- BOTÓN PAGO MERCADO PAGO / SUSCRIPCIÓN -->
-        <div id="premium-lock" style="margin-top: 15px; background: #FFFBEB; padding: 15px; border-radius: 12px; border: 1px solid #FCD34D;">
-            <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; color: #92400E;">
-                ⭐ ¿Quieres acceso Premium ilimitado o registrarte como Chofer Oficial?
-            </p>
-            <a id="mp-link" href="https://www.mercadopago.cl" target="_blank" class="btn btn-accent">
-                Pagar con Mercado Pago
-            </a>
         </div>
 
         <button class="btn btn-outline" style="margin-top: 20px;" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
@@ -368,45 +334,24 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // ==========================================
-    // CONFIGURACIÓN Y CONSTANTES
-    // ==========================================
     const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbwUekqINAn8Us0BPjqp6MJI0xUY9lYFEotQQgQeh_y5unFGE4ckDnlegkd0FG8OEuKl-A/exec";
-    const CODIGO_SECRETO_ACTIVACION = "MP2026"; // Código manual de respaldo
 
     let currentRole = 'pasajeros';
     let map = null;
     let userMarker = null;
 
-    // ==========================================
-    // INICIALIZACIÓN AL CARGAR PÁGINA
-    // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
-        verificarParametrosURL();
         verificarSesionGuardada();
     });
 
     function setRole(role) {
         currentRole = role;
-        document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
-        if(role === 'pasajeros') {
-            event.target.classList.add('active');
-        } else {
-            event.target.classList.add('active');
-        }
-    }
-
-    // Detectar retorno desde Mercado Pago con ?pago=exitoso
-    function verificarParametrosURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'exitoso' || urlParams.get('status') === 'approved') {
-            localStorage.setItem('conecta_mp_premium', 'true');
-            alert('¡Pago confirmado con éxito! Tu cuenta ha sido activada.');
-        }
+        document.getElementById('btn-pasajero').classList.toggle('active', role === 'pasajeros');
+        document.getElementById('btn-chofer').classList.toggle('active', role === 'choferes');
     }
 
     // ==========================================
-    // AUTENTICACIÓN Y BASE DE DATOS
+    // AUTENTICACIÓN Y REGISTRO EN GOOGLE SHEETS
     // ==========================================
     function iniciarSesion() {
         const nombre = document.getElementById('user-name').value.trim();
@@ -420,11 +365,10 @@
         const userData = {
             nombre: nombre,
             telefono: telefono,
-            rol: currentRole,
-            fechaRegistro: new Date().toISOString()
+            rol: currentRole
         };
 
-        // Guardar localmente
+        // Guardar localmente la sesión
         localStorage.setItem('conecta_mp_user', JSON.stringify(userData));
 
         // Enviar a Google Sheets
@@ -432,13 +376,13 @@
             fetch(URL_GOOGLE_SHEETS, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
                 body: JSON.stringify(userData)
             }).then(() => {
-                console.log('Datos enviados a Google Sheets exitosamente.');
-            }).catch(err => {
-                console.error('Error al enviar a Google Sheets:', err);
-            });
+                console.log('Solicitud enviada a Google Sheets.');
+            }).catch(err => console.error('Error al enviar:', err));
         }
 
         cargarPanelPrincipal(userData);
@@ -451,17 +395,6 @@
         }
     }
 
-    function activarCodigoManual() {
-        const codeInput = document.getElementById('manual-code').value.trim();
-        if (codeInput === CODIGO_SECRETO_ACTIVACION) {
-            localStorage.setItem('conecta_mp_premium', 'true');
-            alert('¡Código de activación correcto! Funciones Premium desbloqueadas.');
-            location.reload();
-        } else {
-            alert('Código incorrecto. Intenta de nuevo.');
-        }
-    }
-
     function cerrarSesion() {
         localStorage.removeItem('conecta_mp_user');
         document.getElementById('view-main').classList.remove('active');
@@ -469,7 +402,7 @@
     }
 
     // ==========================================
-    // PANEL PRINCIPAL Y MAPA (GPS)
+    // PANEL PRINCIPAL Y GPS
     // ==========================================
     function cargarPanelPrincipal(user) {
         document.getElementById('view-auth').classList.remove('active');
@@ -485,14 +418,20 @@
             document.getElementById('driver-panel').classList.add('hidden');
         }
 
-        inicializarMapa();
+        setTimeout(() => {
+            inicializarMapa();
+        }, 300);
+
         cargarListaChoferesEjemplo();
     }
 
     function inicializarMapa() {
-        if (map) return; // Evitar reinicializar
+        if (map) {
+            map.invalidateSize();
+            return;
+        }
 
-        // Coordenadas centrar María Pinto (-33.518, -71.119 aprox)
+        // Centro María Pinto (-33.518, -71.119)
         map = L.map('map').setView([-33.518, -71.119], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -503,34 +442,29 @@
 
     function transmitirUbicacion() {
         if (!navigator.geolocation) {
-            alert('La geolocalización no está soportada por tu navegador.');
+            alert('La geolocalización no está disponible en tu dispositivo.');
             return;
         }
-
-        alert('Obteniendo ubicación GPS en tiempo real...');
 
         navigator.geolocation.getCurrentPosition(position => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            map.setView([lat, lng], 15);
+            if (map) {
+                map.setView([lat, lng], 15);
 
-            if (userMarker) {
-                userMarker.setLatLng([lat, lng]);
-            } else {
-                userMarker = L.marker([lat, lng]).addTo(map)
-                    .bindPopup('<b>Tu ubicación (Chofer)</b>').openPopup();
+                if (userMarker) {
+                    userMarker.setLatLng([lat, lng]);
+                } else {
+                    userMarker = L.marker([lat, lng]).addTo(map)
+                        .bindPopup('<b>Tu posición actual</b>').openPopup();
+                }
             }
-
-            alert('Ubicación en vivo transmitida correctamente.');
         }, error => {
-            alert('Error al obtener la ubicación GPS: ' + error.message);
-        });
+            alert('Asegúrate de permitir el acceso al GPS en tu navegador.');
+        }, { enableHighAccuracy: true });
     }
 
-    // ==========================================
-    // MANEJO DE FOTO DEL VEHÍCULO Y CONTACTO
-    // ==========================================
     function previewFotoVehiculo(event) {
         const file = event.target.files[0];
         if (file) {
@@ -546,8 +480,6 @@
 
     function cargarListaChoferesEjemplo() {
         const listDiv = document.getElementById('drivers-list');
-        
-        // Datos simulados de choferes activos en María Pinto
         const choferesEjemplo = [
             { nombre: "Carlos Morales", asientos: 3, tramo: "María Pinto ➔ Melipilla", fono: "+56911112222" },
             { nombre: "Gonzalo Tapia", asientos: 2, tramo: "El Bollenar ➔ Curacaví", fono: "+56933334444" }
