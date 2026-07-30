@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conecta MP - Sistema Integrado</title>
-    <!-- Leaflet CSS para Mapas en Vivo -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -168,7 +168,6 @@
 
         <!-- PANEL PASAJEROS -->
         <div id="panel-pasajeros" class="panel active">
-            <!-- BARRA DE PROXIMIDAD EN PANEL DE PASAJERO -->
             <div id="proximity-bar" class="proximity-bar">
                 <span id="proximity-icon" style="font-size:16px;">📡</span> 
                 <span id="proximity-text" style="font-weight:700; font-size:13px;">Buscando transportes cercanos...</span>
@@ -190,7 +189,7 @@
             <textarea id="msg-pasajero" rows="2" placeholder="Escribe una nota para el chofer (ej: Esperando en cruce San Manuel)..."></textarea>
             
             <div id="map-pasajero" class="map-real"></div>
-            <div style="font-size:12px; color:#60a5fa; text-align:center; margin-bottom:10px;" id="live-driver-status">Conectando con red en vivo...</div>
+            <div style="font-size:12px; color:#60a5fa; text-align:center; margin-bottom:10px;" id="live-driver-status">Conectando con la red en vivo de Conecta MP...</div>
 
             <button class="btn btn-blue" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación con Choferes</button>
 
@@ -310,8 +309,22 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- SDKs de Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-    const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbwUekqINAn8Us0BPjqp6MJI0xUY9lYFEotQQgQeh_y5unFGE4ckDnlegkd0FG8OEuKl-A/exec";
+    // Conexión a tu proyecto oficial 'conecta-mp'
+    const firebaseConfig = {
+        projectId: "conecta-mp",
+        databaseURL: "https://conecta-mp-default-rtdb.firebaseio.com/"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
     let watchGpsId = null;
     let mapPasajero = null, mapChofer = null;
     let markerPasajero = null, markerChofer = null;
@@ -331,8 +344,7 @@
         const foto = localStorage.getItem('conecta_mp_vehicle_photo');
         if (foto) cargarFotosEnInterfaz(foto);
 
-        consultarServidorGlobal();
-        setInterval(consultarServidorGlobal, 3000);
+        escucharRedEnTiempoReal();
     };
 
     function ingresoGarantizado() {
@@ -349,7 +361,6 @@
         localStorage.setItem('conecta_mp_phone', telefono);
         localStorage.setItem('conecta_mp_role', rol);
 
-        enviarEstadoServidor('register', true, { nombre: nombre, telefono: telefono, rol: rol });
         mostrarAppPrincipal(rol);
     }
 
@@ -360,7 +371,6 @@
         const btnPasajerosTab = document.getElementById('btn-tab-pasajeros');
         const btnChoferesTab = document.getElementById('btn-tab-choferes');
 
-        // BLOQUEO ABSOLUTO DE PESTAÑAS SEGÚN ROL
         if (rol !== 'pasajeros') {
             if (btnPasajerosTab) btnPasajerosTab.style.display = 'none';
             if (btnChoferesTab) btnChoferesTab.style.display = 'block';
@@ -430,8 +440,8 @@
         const fono = localStorage.getItem('conecta_mp_phone');
         const rol = localStorage.getItem('conecta_mp_role');
         if (watchGpsId && nombre) {
-            enviarEstadoServidor('update_driver', true, {
-                nombre: nombre, telefono: fono, rol: rol, asientos: cupos, lat: miLatitud, lon: miLongitud
+            actualizarDriverFirebase(nombre, {
+                nombre: nombre, telefono: fono, rol: rol, asientos: cupos, lat: miLatitud, lon: miLongitud, lastUpdate: Date.now()
             });
         }
     }
@@ -452,7 +462,7 @@
         if (imgC) { imgC.src = base64; imgC.style.display = 'block'; }
     }
 
-    /* TRANSMISIÓN GPS CHOFER */
+    /* TRANSMISIÓN GPS EN VIVO (FIREBASE) */
     function activarRutaChofer() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -474,13 +484,13 @@
 
                 document.getElementById('chofer-gps-status').innerText = `🟢 Transmitiendo a la red: Lat ${miLatitud.toFixed(4)}, Lon ${miLongitud.toFixed(4)}`;
 
-                enviarEstadoServidor('update_driver', true, {
-                    nombre: nombre, telefono: fono, rol: rol, asientos: cupos, lat: miLatitud, lon: miLongitud
+                actualizarDriverFirebase(nombre, {
+                    nombre: nombre, telefono: fono, rol: rol, asientos: cupos, lat: miLatitud, lon: miLongitud, lastUpdate: Date.now()
                 });
-            }, (error) => {
-                alert("⚠️ Por favor activa los permisos de GPS en tu teléfono.");
+            }, (err) => {
+                alert("⚠️ Debes autorizar el GPS para mostrar tu posición a los vecinos.");
             }, { enableHighAccuracy: true });
-            
+
             alert("✅ ¡Transmisión activada en la red de María Pinto!");
         }
     }
@@ -500,7 +510,21 @@
 
     function desconectarChoferSilencioso() {
         const nombre = localStorage.getItem('conecta_mp_user');
-        if (nombre) enviarEstadoServidor('update_driver', false, { nombre: nombre });
+        if (nombre) {
+            db.ref('drivers/' + sanitizarKey(nombre)).remove();
+        }
+    }
+
+    function sanitizarKey(str) {
+        return str.replace(/[.#$\[\]]/g, "_");
+    }
+
+    function actualizarDriverFirebase(nombre, payload) {
+        db.ref('drivers/' + sanitizarKey(nombre)).set(payload);
+    }
+
+    function actualizarPassengerFirebase(nombre, payload) {
+        db.ref('passengers/' + sanitizarKey(nombre)).set(payload);
     }
 
     function obtenerEtiquetaRol(rol) {
@@ -517,7 +541,7 @@
         }
     }
 
-    /* PASAJERO COMPARTIR UBICACIÓN */
+    /* COMPARTIR UBICACIÓN PASAJERO */
     function enviarAlertaPasajero() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -534,8 +558,8 @@
                     else markerPasajero = L.marker([miLatitud, miLongitud]).addTo(mapPasajero).bindPopup('<b>Tu Ubicación</b>').openPopup();
                 }
 
-                enviarEstadoServidor('update_passenger', true, {
-                    nombre: nombre, telefono: fono, nota: msg || 'Esperando transporte en ruta', lat: miLatitud, lon: miLongitud
+                actualizarPassengerFirebase(nombre, {
+                    nombre: nombre, telefono: fono, nota: msg || 'Esperando transporte en ruta', lat: miLatitud, lon: miLongitud, lastUpdate: Date.now()
                 });
 
                 alert("📍 Ubicación compartida en la red para todos los choferes.");
@@ -543,47 +567,21 @@
         }
     }
 
-    /* ENVÍO AL SERVIDOR OPTIMIZADO PARA MÓVILES (SIN BLOQUEOS CORS) */
-    function enviarEstadoServidor(action, activo, payload) {
-        if (!URL_GOOGLE_SHEETS) return;
+    /* ESCUCHAR CAMBIOS EN TIEMPO REAL */
+    function escucharRedEnTiempoReal() {
+        db.ref('drivers').on('value', snapshot => {
+            globalDriversLive = snapshot.val() || {};
+            renderizarChoferesActivos();
+            calcularAvisoProximidad();
+        });
 
-        const bodyData = new URLSearchParams();
-        bodyData.append('action', action);
-        bodyData.append('activo', activo ? "true" : "false");
-        
-        for (let key in payload) {
-            if (payload[key] !== undefined && payload[key] !== null) {
-                bodyData.append(key, payload[key].toString());
-            }
-        }
-
-        fetch(URL_GOOGLE_SHEETS, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: bodyData.toString()
-        })
-        .then(() => console.log("Transmisión a Apps Script enviada con éxito"))
-        .catch(err => console.error("Error transmitiendo:", err));
+        db.ref('passengers').on('value', snapshot => {
+            globalPassengersLive = snapshot.val() || {};
+            renderizarPasajerosEsperando();
+        });
     }
 
-    /* CONSULTAR RED EN VIVO */
-    function consultarServidorGlobal() {
-        if (!URL_GOOGLE_SHEETS) return;
-
-        fetch(URL_GOOGLE_SHEETS)
-            .then(res => res.json())
-            .then(data => {
-                if (data.drivers) globalDriversLive = data.drivers;
-                if (data.passengers) globalPassengersLive = data.passengers;
-                renderizarChoferesActivos();
-                renderizarPasajerosEsperando();
-                calcularAvisoProximidad();
-            })
-            .catch(err => console.log("Sincronizando...", err));
-    }
-
-    /* ALARMA SONORA Y VIBRACIÓN DE PROXIMIDAD */
+    /* ALARMA SONORA Y VIBRACIÓN */
     function emitirAlarmaProximidad() {
         const ahora = Date.now();
         if (ahora - ultimaAlarmaEjecutada < 20000) return;
@@ -611,7 +609,7 @@
         }
     }
 
-    /* BARRA DE PROXIMIDAD EN EL USUARIO PASAJERO */
+    /* CÁLCULO DE DISTANCIA Y ALERTA DE PROXIMIDAD */
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
         const R = 6371; 
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -770,13 +768,17 @@
     function abrirAdminMaestro() {
         const pass = prompt("🔐 Clave Admin:");
         if (pass !== "ADMIN2026") return alert("Acceso denegado.");
-        const opt = prompt("1. Cambiar Código Manual\n2. Limpiar Muro");
+        const opt = prompt("1. Cambiar Código Manual\n2. Limpiar Muro\n3. Limpiar Base de Datos Firebase");
         if (opt === "1") {
             const nCode = prompt("Nuevo código manual:", "MP2026");
             if (nCode) localStorage.setItem('conecta_mp_custom_code', nCode);
         } else if (opt === "2") {
             document.getElementById('muro-reportes').innerHTML = "";
             alert("Muro de reportes borrado.");
+        } else if (opt === "3") {
+            db.ref('drivers').remove();
+            db.ref('passengers').remove();
+            alert("🧹 Base de datos en vivo restablecida.");
         }
     }
 </script>
