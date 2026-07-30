@@ -192,6 +192,7 @@
             <div style="font-size:12px; color:#60a5fa; text-align:center; margin-bottom:10px;" id="live-driver-status">Conectando con la red en vivo de Conecta MP...</div>
 
             <button class="btn btn-blue" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación con Choferes</button>
+            <button class="btn btn-red" id="btn-desconectar-pasajero" style="display:none;" onclick="desconectarPasajero()">🛑 Cancelar / Quitar Ubicación</button>
 
             <div style="margin-top: 20px;">
                 <label style="color: #93c5fd; font-size: 14px;">🚗 Vehículos Disponibles en Ruta:</label>
@@ -314,7 +315,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // Conexión a tu proyecto oficial 'conecta-mp'
     const firebaseConfig = {
         projectId: "conecta-mp",
         databaseURL: "https://conecta-mp-default-rtdb.firebaseio.com/"
@@ -409,7 +409,13 @@
 
     function cerrarSesion() {
         if (confirm("¿Cerrar sesión?")) {
-            desconectarChoferSilencioso();
+            const rol = localStorage.getItem('conecta_mp_role');
+            if (rol === 'pasajeros') {
+                desconectarPasajeroSilencioso();
+            } else {
+                desconectarChoferSilencioso();
+            }
+
             localStorage.clear();
             location.reload();
         }
@@ -462,7 +468,7 @@
         if (imgC) { imgC.src = base64; imgC.style.display = 'block'; }
     }
 
-    /* TRANSMISIÓN GPS EN VIVO (FIREBASE) */
+    /* TRANSMISIÓN GPS EN VIVO (CHOFER) */
     function activarRutaChofer() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -511,7 +517,18 @@
     function desconectarChoferSilencioso() {
         const nombre = localStorage.getItem('conecta_mp_user');
         if (nombre) {
-            db.ref('drivers/' + sanitizarKey(nombre)).remove();
+            const key = sanitizarKey(nombre);
+            db.ref('drivers/' + key).once('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    db.ref('history_drivers').push({
+                        ...data,
+                        endedAt: Date.now(),
+                        endedAtFormatted: new Date().toLocaleString("es-CL")
+                    });
+                }
+                db.ref('drivers/' + key).remove();
+            });
         }
     }
 
@@ -541,7 +558,7 @@
         }
     }
 
-    /* COMPARTIR UBICACIÓN PASAJERO */
+    /* COMPARTIR UBICACIÓN Y DESCONEXIÓN PASAJERO */
     function enviarAlertaPasajero() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
@@ -562,7 +579,39 @@
                     nombre: nombre, telefono: fono, nota: msg || 'Esperando transporte en ruta', lat: miLatitud, lon: miLongitud, lastUpdate: Date.now()
                 });
 
-                alert("📍 Ubicación compartida en la red para todos los choferes.");
+                const btnDesconectar = document.getElementById('btn-desconectar-pasajero');
+                if (btnDesconectar) btnDesconectar.style.display = 'flex';
+
+                alert("📍 Ubicación compartida. Los choferes ya pueden verte en ruta.");
+            });
+        }
+    }
+
+    function desconectarPasajero() {
+        desconectarPasajeroSilencioso();
+
+        const btnDesconectar = document.getElementById('btn-desconectar-pasajero');
+        if (btnDesconectar) btnDesconectar.style.display = 'none';
+
+        document.getElementById('msg-pasajero').value = '';
+
+        alert("🛑 Tu alerta de ubicación ha sido eliminada.");
+    }
+
+    function desconectarPasajeroSilencioso() {
+        const nombre = localStorage.getItem('conecta_mp_user');
+        if (nombre) {
+            const key = sanitizarKey(nombre);
+            db.ref('passengers/' + key).once('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    db.ref('history_passengers').push({
+                        ...data,
+                        endedAt: Date.now(),
+                        endedAtFormatted: new Date().toLocaleString("es-CL")
+                    });
+                }
+                db.ref('passengers/' + key).remove();
             });
         }
     }
