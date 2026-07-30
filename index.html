@@ -43,7 +43,7 @@
         select, textarea, input[type="text"], input[type="tel"] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; font-size: 15px; background-color: #0f172a; color: white; }
         select:focus, textarea:focus, input:focus { outline: none; border-color: var(--blue-glow); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
         
-        /* Bloqueo Premium (Oculto por liberación) */
+        /* Bloqueo Premium */
         .premium-blur-zone { position: relative; border-radius: 16px; overflow: hidden; margin: 16px 0; }
         .premium-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(6px); z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 
@@ -114,10 +114,14 @@
         <label for="auth-phone">Teléfono de Contacto:</label>
         <input type="tel" id="auth-phone" placeholder="Ej: +56912345678">
 
-        <label for="auth-role">Tipo de Perfil:</label>
+        <label for="auth-role">Tipo de Perfil / Vehículo:</label>
         <select id="auth-role">
             <option value="pasajeros">📱 Pasajero / Vecino</option>
-            <option value="choferes">🚗 Chofer de Colectivo o Liebre</option>
+            <option value="particulares">🚗 Vehículo Particular (Auto Compartido)</option>
+            <option value="colectivos">🚖 Colectivo</option>
+            <option value="buses">🚌 Liebre / Bus Público</option>
+            <option value="furgon_escolar">🚐 Furgón Escolar</option>
+            <option value="bus_escolar">🚌 Bus Escolar</option>
         </select>
 
         <button class="btn btn-ingreso" onclick="ingresoGarantizado()">ENTRAR A LA APP</button>
@@ -143,6 +147,8 @@
                 <option>Línea 2 Colectivos (Los Rulos - Melipilla)</option>
                 <option>Línea 3 Colectivos (Los Panguiles - Curacaví)</option>
                 <option>Liebre (Los Rulos - Melipilla)</option>
+                <option>Furgón / Bus Escolar</option>
+                <option>Vehículo Particular Compartido</option>
             </select>
             
             <textarea id="msg-pasajero" rows="2" placeholder="Nota para el chofer..."></textarea>
@@ -170,11 +176,11 @@
                 <button class="btn btn-blue" style="margin-top: 10px;" onclick="enviarAlertaPasajero()">📍 Compartir Ubicación</button>
             </div>
 
-            <!-- SECCIÓN: LISTADO DE CHOFERES CONECTADOS EN TIEMPO REAL -->
+            <!-- SECCIÓN: LISTADO DE VEHÍCULOS Y CHOFERES CONECTADOS EN TIEMPO REAL -->
             <div style="margin-top: 20px;">
-                <label style="color: #93c5fd; font-size: 14px;">🚗 Choferes Activos en Ruta:</label>
+                <label style="color: #93c5fd; font-size: 14px;">🚗 Vehículos Activos en Ruta:</label>
                 <div id="lista-choferes-activos">
-                    <!-- Se llena automáticamente con choferes en movimiento -->
+                    <!-- Se llena automáticamente -->
                 </div>
             </div>
         </div>
@@ -245,16 +251,13 @@
 </div>
 
 <script>
-    // URL DE TU GOOGLE APPS SCRIPT INTEGRADA
     const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbwUekqINAn8Us0BPjqp6MJI0xUY9lYFEotQQgQeh_y5unFGE4ckDnlegkd0FG8OEuKl-A/exec";
     let watchGpsId = null;
 
     window.onload = function() {
-        // LIBERAR PREMIUM AUTOMÁTICAMENTE
         const lock = document.getElementById('premium-lock');
         if (lock) lock.style.display = 'none';
 
-        // Cargar sesión si existe
         const user = localStorage.getItem('conecta_mp_user');
         const role = localStorage.getItem('conecta_mp_role');
         if (user && role) {
@@ -264,7 +267,6 @@
         const foto = localStorage.getItem('conecta_mp_vehicle_photo');
         if (foto) cargarFotosEnInterfaz(foto);
 
-        // Actualizar choferes activos cada 5 segundos
         renderizarChoferesActivos();
         setInterval(renderizarChoferesActivos, 5000);
     };
@@ -331,15 +333,15 @@
 
     let cupos = 4;
     function cambiarCupo(val) {
-        cupos = Math.max(0, Math.min(15, cupos + val));
+        cupos = Math.max(0, Math.min(30, cupos + val));
         document.getElementById('cupos-actuales').innerText = cupos;
         const live = document.getElementById('live-driver-status');
         if (live) live.innerText = `Vehículo activo: ${cupos} cupos libres`;
         
-        // Actualizar datos del chofer si está transmitiendo
         const nombre = localStorage.getItem('conecta_mp_user');
+        const rol = localStorage.getItem('conecta_mp_role');
         if (watchGpsId && nombre) {
-            actualizarChoferEnRegistro(nombre, true, cupos);
+            actualizarChoferEnRegistro(nombre, true, cupos, '', '', '', rol);
         }
     }
 
@@ -361,10 +363,10 @@
         if (imgP) { imgP.src = base64; imgP.style.display = 'block'; }
     }
 
-    // GESTIÓN DE CHOFERES EN TIEMPO REAL CON DESCONEXIÓN AUTOMÁTICA
     function activarRutaChofer() {
         const nombre = localStorage.getItem('conecta_mp_user');
         const fono = localStorage.getItem('conecta_mp_phone');
+        const rol = localStorage.getItem('conecta_mp_role');
 
         if (navigator.geolocation) {
             document.getElementById('btn-activar-gps').style.display = 'none';
@@ -375,11 +377,10 @@
                 const lon = p.coords.longitude.toFixed(4);
                 document.getElementById('chofer-gps-status').innerText = `📡 Transmitiendo en vivo: Lat ${lat}, Lon ${lon}`;
                 
-                // Guardar chofer activo en registro con marca de tiempo
-                actualizarChoferEnRegistro(nombre, true, cupos, fono, lat, lon);
+                actualizarChoferEnRegistro(nombre, true, cupos, fono, lat, lon, rol);
                 renderizarChoferesActivos();
             });
-            alert("✅ ¡En ruta! Tu vehículo ahora es visible para los pasajeros.");
+            alert("✅ ¡En ruta! Tu vehículo ahora es visible para la comunidad.");
         }
     }
 
@@ -403,12 +404,13 @@
         if (nombre) actualizarChoferEnRegistro(nombre, false);
     }
 
-    function actualizarChoferEnRegistro(nombre, activo, asientos = 4, fono = '', lat = '', lon = '') {
+    function actualizarChoferEnRegistro(nombre, activo, asientos = 4, fono = '', lat = '', lon = '', rol = '') {
         let choferes = JSON.parse(localStorage.getItem('conecta_mp_drivers_live') || '{}');
         if (activo) {
             choferes[nombre] = {
                 nombre: nombre,
                 telefono: fono || (choferes[nombre] ? choferes[nombre].telefono : ''),
+                rol: rol || (choferes[nombre] ? choferes[nombre].rol : 'Vehículo'),
                 asientos: asientos,
                 lat: lat,
                 lon: lon,
@@ -418,6 +420,17 @@
             delete choferes[nombre];
         }
         localStorage.setItem('conecta_mp_drivers_live', JSON.stringify(choferes));
+    }
+
+    function obtenerEtiquetaRol(rol) {
+        switch(rol) {
+            case 'particulares': return '🚗 Particular';
+            case 'colectivos': return '🚖 Colectivo';
+            case 'buses': return '🚌 Bus / Liebre';
+            case 'furgon_escolar': return '🚐 Furgón Escolar';
+            case 'bus_escolar': return '🚌 Bus Escolar';
+            default: return '🚘 Vehículo';
+        }
     }
 
     function renderizarChoferesActivos() {
@@ -432,7 +445,6 @@
 
         for (let key in choferes) {
             const d = choferes[key];
-            // Desconexión automática si lleva más de 30 min sin actualizar GPS (1800000 ms)
             if (ahora - d.lastUpdate > 1800000) {
                 delete choferes[key];
                 continue;
@@ -441,12 +453,13 @@
             contador++;
             const fonoLimpio = d.telefono ? d.telefono.replace(/[^0-9]/g, '') : '';
             const linkWsp = fonoLimpio ? `https://wa.me/${fonoLimpio}` : '#';
+            const etiqueta = obtenerEtiquetaRol(d.rol);
 
             html += `
                 <div class="driver-card-active">
                     <div class="driver-card-header">
-                        <span class="driver-card-title">🚗 ${d.nombre}</span>
-                        <span class="badge-seats">💺 ${d.asientos} asientos libres</span>
+                        <span class="driver-card-title">${etiqueta}: ${d.nombre}</span>
+                        <span class="badge-seats">💺 ${d.asientos} cupos</span>
                     </div>
                     <p style="font-size:11px; color:var(--text-muted);">Ubicación: ${d.lat ? `Lat ${d.lat}, Lon ${d.lon}` : 'En trayecto'}</p>
                     ${fonoLimpio ? `<a href="${linkWsp}" target="_blank" class="btn btn-green" style="padding:6px 10px; font-size:12px; margin-top:8px;">💬 Contactar por WhatsApp</a>` : ''}
@@ -457,11 +470,11 @@
         localStorage.setItem('conecta_mp_drivers_live', JSON.stringify(choferes));
 
         if (contador === 0) {
-            contenedor.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">No hay choferes transmitiendo en este momento.</p>`;
-            if (statusHeader) statusHeader.innerText = "Esperando choferes en ruta...";
+            contenedor.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">No hay vehículos transmitiendo en este momento.</p>`;
+            if (statusHeader) statusHeader.innerText = "Esperando vehículos en ruta...";
         } else {
             contenedor.innerHTML = html;
-            if (statusHeader) statusHeader.innerText = `${contador} chofer(es) activo(s) en ruta`;
+            if (statusHeader) statusHeader.innerText = `${contador} vehículo(s) activo(s) en ruta`;
         }
     }
 
