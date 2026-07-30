@@ -48,9 +48,34 @@
         /* MAPA INTERACTIVO REAL */
         .map-real { height: 230px; width: 100%; border-radius: 16px; border: 2px solid #1e3a8a; margin-bottom: 10px; z-index: 1; }
         
-        /* ALERTA DE PROXIMIDAD */
-        .proximity-alert { display: none; background: linear-gradient(135deg, #d97706, #b45309); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 13px; text-align: center; margin-bottom: 12px; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; } }
+        /* BARRA DE PROXIMIDAD EN PANEL DE PASAJERO */
+        .proximity-bar {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid var(--blue-glow);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .proximity-bar.alert-active {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border-color: #f59e0b;
+            color: white;
+            animation: pulseProximity 2s infinite;
+        }
+        .proximity-bar.alert-arriving {
+            background: linear-gradient(135deg, #0f766e, #047857);
+            border-color: #2dd4bf;
+            color: white;
+            animation: pulseProximity 1s infinite;
+        }
+        @keyframes pulseProximity {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
 
         /* Tarjetas */
         .driver-card-active { background: #0f172a; border-radius: 14px; padding: 14px; margin-top: 10px; border: 1px solid rgba(59, 130, 246, 0.3); }
@@ -114,12 +139,14 @@
         <label for="auth-role">Tipo de Perfil / Vehículo:</label>
         <select id="auth-role">
             <option value="pasajeros">📱 Pasajero / Vecino</option>
-            <option value="particulares">🚗 Vehículo Particular (Auto Compartido)</option>
-            <option value="colectivos">🚖 Colectivo</option>
+            <option value="colectivo_l1">🚖 Colectivo - Línea 1 (Lolenco - MP)</option>
+            <option value="colectivo_l2">🚖 Colectivo - Línea 2 (Los Rulos - Melipilla)</option>
+            <option value="colectivo_l3">🚖 Colectivo - Línea 3 (Los Panguiles - Curacaví)</option>
             <option value="buses_santiago">🚌 Bus a Santiago</option>
             <option value="liebre_muni">🚐 Liebre Gratuita Municipal</option>
             <option value="furgon_escolar">🚐 Furgón Escolar</option>
             <option value="bus_escolar">🚌 Bus Escolar</option>
+            <option value="particulares">🚗 Vehículo Particular (Auto Compartido)</option>
         </select>
 
         <button class="btn btn-ingreso" onclick="ingresoGarantizado()">ENTRAR A LA APP</button>
@@ -141,13 +168,18 @@
 
         <!-- PANEL PASAJEROS -->
         <div id="panel-pasajeros" class="panel active">
-            <!-- ALERTA DE PROXIMIDAD -->
-            <div id="proximity-banner" class="proximity-alert"></div>
+            <!-- BARRA DE PROXIMIDAD DENTRO DEL PERFIL PASAJERO -->
+            <div id="proximity-bar" class="proximity-bar">
+                <span id="proximity-icon" style="font-size:16px;">📡</span> 
+                <span id="proximity-text" style="font-weight:700; font-size:13px;">Buscando transportes cercanos...</span>
+            </div>
 
             <label>🔍 Filtrar por transporte:</label>
             <select id="select-servicio" onchange="renderizarChoferesActivos()">
                 <option value="todos">🌐 Todos los transportes activos</option>
-                <option value="colectivos">🚖 Colectivos (Líneas 1, 2 y 3)</option>
+                <option value="colectivo_l1">🚖 Colectivo - Línea 1 (Lolenco - MP)</option>
+                <option value="colectivo_l2">🚖 Colectivo - Línea 2 (Los Rulos - Melipilla)</option>
+                <option value="colectivo_l3">🚖 Colectivo - Línea 3 (Los Panguiles - Curacaví)</option>
                 <option value="buses_santiago">🚌 Buses a Santiago (Bollenar / MP)</option>
                 <option value="liebre_muni">🚐 Liebre Gratuita Municipal</option>
                 <option value="furgon_escolar">🚐 Furgones Escolares</option>
@@ -251,7 +283,7 @@
                 <table>
                     <thead><tr><th>Línea</th><th>Frecuencia / Recorrido</th></tr></thead>
                     <tbody>
-                        <tr><td>Línea 1</td><td>Cada 15 min (Lolenco - MP)</td></tr>
+                        <tr><td>Línea 1</td><td>Cada 15 min (Lolenco - MP Centro)</td></tr>
                         <tr><td>Línea 2</td><td>Cada 20 min (Los Rulos - Melipilla)</td></tr>
                         <tr><td>Línea 3</td><td>Rotativo (Los Panguiles - Curacaví)</td></tr>
                     </tbody>
@@ -287,6 +319,7 @@
     let globalDriversLive = {};
     let globalPassengersLive = {};
     let miLatitud = null, miLongitud = null;
+    let ultimaAlarmaEjecutada = 0; // Control de frecuencia de la alarma
 
     window.onload = function() {
         const user = localStorage.getItem('conecta_mp_user');
@@ -345,7 +378,6 @@
         mapPasajero = L.map('map-pasajero').setView([-33.518, -71.119], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapPasajero);
         
-        // Obtener posición inicial del pasajero
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(p => {
                 miLatitud = p.coords.latitude;
@@ -353,6 +385,7 @@
                 mapPasajero.setView([miLatitud, miLongitud], 14);
                 if (markerPasajero) markerPasajero.setLatLng([miLatitud, miLongitud]);
                 else markerPasajero = L.marker([miLatitud, miLongitud]).addTo(mapPasajero).bindPopup('<b>Tu Ubicación</b>').openPopup();
+                calcularAvisoProximidad();
             });
         }
     }
@@ -468,12 +501,14 @@
 
     function obtenerEtiquetaRol(rol) {
         switch(rol) {
-            case 'particulares': return '🚗 Particular';
-            case 'colectivos': return '🚖 Colectivo';
+            case 'colectivo_l1': return '🚖 Colectivo L1 (Lolenco)';
+            case 'colectivo_l2': return '🚖 Colectivo L2 (Los Rulos)';
+            case 'colectivo_l3': return '🚖 Colectivo L3 (Curacaví)';
             case 'buses_santiago': return '🚌 Bus Santiago';
             case 'liebre_muni': return '🚐 Liebre Muni (Gratis)';
             case 'furgon_escolar': return '🚐 Furgón Escolar';
             case 'bus_escolar': return '🚌 Bus Escolar';
+            case 'particulares': return '🚗 Particular';
             default: return '🚘 Vehículo';
         }
     }
@@ -504,7 +539,7 @@
         }
     }
 
-    /* ENVÍO AL SERVIDOR CON FORM-DATA (RESISTENTE A CORB / NO-CORS) */
+    /* ENVÍO AL SERVIDOR CON FORM-DATA */
     function enviarEstadoServidor(action, activo, payload) {
         if (!URL_GOOGLE_SHEETS) return;
 
@@ -524,7 +559,7 @@
         }).catch(err => console.log(err));
     }
 
-    /* CONSULTAR RED EN VIVO CADA 3 SEG */
+    /* CONSULTAR RED EN VIVO */
     function consultarServidorGlobal() {
         if (!URL_GOOGLE_SHEETS) return;
 
@@ -535,12 +570,43 @@
                 if (data.passengers) globalPassengersLive = data.passengers;
                 renderizarChoferesActivos();
                 renderizarPasajerosEsperando();
-                calcularAvisoProximidad(); // AVISO DE PROXIMIDAD
+                calcularAvisoProximidad();
             })
             .catch(err => console.log("Sincronizando...", err));
     }
 
-    /* CÁLCULO Y AVISO DE PROXIMIDAD DE TRANSPORTE */
+    /* ALARMA SONORA Y VIBRACIÓN DE PROXIMIDAD */
+    function emitirAlarmaProximidad() {
+        const ahora = Date.now();
+        // Evita sonar más de una vez cada 20 segundos
+        if (ahora - ultimaAlarmaEjecutada < 20000) return;
+        ultimaAlarmaEjecutada = ahora;
+
+        try {
+            // 1. Vibrar el dispositivo (3 pulsos)
+            if ("vibrate" in navigator) {
+                navigator.vibrate([400, 200, 400, 200, 400]);
+            }
+            // 2. Tono de aviso sonoro (Beep sintetizado)
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tono agudo 880Hz
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.2);
+        } catch(e) {
+            console.log("Audio o vibración restringida por el navegador:", e);
+        }
+    }
+
+    /* BARRA DE PROXIMIDAD EN EL USUARIO PASAJERO */
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
         const R = 6371; 
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -553,8 +619,11 @@
     }
 
     function calcularAvisoProximidad() {
-        const banner = document.getElementById('proximity-banner');
-        if (!banner || !miLatitud || !miLongitud) return;
+        const bar = document.getElementById('proximity-bar');
+        const icon = document.getElementById('proximity-icon');
+        const text = document.getElementById('proximity-text');
+        
+        if (!bar || !miLatitud || !miLongitud) return;
 
         let vehiculoCercano = null;
         let menorDistancia = 999;
@@ -570,18 +639,24 @@
             }
         }
 
-        if (vehiculoCercano && menorDistancia <= 2.0) {
-            banner.style.display = 'block';
+        // ALERTA ACTIVADA A 1 KILÓMETRO DE DISTANCIA
+        if (vehiculoCercano && menorDistancia <= 1.0) {
             const etiqueta = obtenerEtiquetaRol(vehiculoCercano.rol);
-            if (menorDistancia <= 0.5) {
-                banner.style.background = 'linear-gradient(135deg, #0f766e, #047857)';
-                banner.innerHTML = `🚨 ¡${etiqueta} de ${vehiculoCercano.nombre} LLEGANDO! (a menos de 500m)`;
-            } else {
-                banner.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
-                banner.innerHTML = `🔔 ${etiqueta} de ${vehiculoCercano.nombre} viene cerca (a ${menorDistancia.toFixed(1)} km)`;
-            }
+            bar.className = 'proximity-bar alert-arriving';
+            icon.innerText = '🚨';
+            text.innerText = `¡${etiqueta} (${vehiculoCercano.nombre}) A MENOS DE 1 KM! (${menorDistancia.toFixed(1)} km)`;
+            
+            // Tocar alarma sonora y vibrar el celular
+            emitirAlarmaProximidad();
+        } else if (vehiculoCercano && menorDistancia <= 3.0) {
+            const etiqueta = obtenerEtiquetaRol(vehiculoCercano.rol);
+            bar.className = 'proximity-bar alert-active';
+            icon.innerText = '🔔';
+            text.innerText = `${etiqueta} (${vehiculoCercano.nombre}) viene cerca — a ${menorDistancia.toFixed(1)} km`;
         } else {
-            banner.style.display = 'none';
+            bar.className = 'proximity-bar';
+            icon.innerText = '📡';
+            text.innerText = Object.keys(globalDriversLive).length > 0 ? "Buscando transportes cercanos a tu posición..." : "Sin transportes en ruta en este momento.";
         }
     }
 
