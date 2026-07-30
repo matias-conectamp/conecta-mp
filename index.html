@@ -58,6 +58,9 @@
         .driver-card-title { font-weight: 700; color: #93c5fd; font-size: 15px; }
         .badge-seats { background: #0f766e; color: #5eead4; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
         
+        /* Banner Instructivo Choferes */
+        .driver-alert-banner { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: center; font-size: 13px; color: #fef08a; line-height: 1.4; }
+
         /* Muro de Reportes */
         .report-card { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--blue-accent); }
         .report-card.danger { border-left-color: var(--danger); }
@@ -78,7 +81,7 @@
         .vehicle-photo-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); display: none; }
         
         /* Contador Choferes */
-        .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
+        .counter-container { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 15px 0; }
         .btn-count { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 24px; font-weight: bold; color: white; cursor: pointer; background: #0f172a; }
         .count-display { font-size: 42px; font-weight: 800; color: white; }
         
@@ -202,6 +205,14 @@
         </div>
 
         <div id="panel-choferes" class="panel">
+            <!-- BANNER INSTRUCTIVO PARA EL CHOFER -->
+            <div class="driver-alert-banner">
+                <strong>📍 Pasos para activar tu vehículo:</strong><br>
+                1. Configura tus asientos disponibles.<br>
+                2. Toca el botón verde <strong>"Transmitir Ubicación"</strong>.<br>
+                3. ¡Listo! Tu posición y teléfono aparecerán en la pestaña <strong>🛰️ GPS</strong> para todos los vecinos.
+            </div>
+
             <div class="counter-container">
                 <button class="btn-count" onclick="cambiarCupo(-1)">-</button>
                 <div class="count-display" id="cupos-actuales">4</div>
@@ -341,7 +352,13 @@
     function mostrarAppPrincipal(rol) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
-        switchTab(rol);
+        
+        // Si entra como chofer/vehículo, lo lleva directo al panel de control para activar GPS
+        if (rol !== 'pasajeros') {
+            switchTab('choferes');
+        } else {
+            switchTab('pasajeros');
+        }
     }
 
     function ingresarCodigoManual() {
@@ -419,7 +436,7 @@
                 actualizarChoferEnRegistro(nombre, true, cupos, fono, lat, lon, rol);
                 renderizarChoferesActivos();
             });
-            alert("✅ ¡En ruta! Tu vehículo ahora es visible para la comunidad.");
+            alert("✅ ¡En ruta! Tu vehículo ahora es visible para la comunidad. Puedes ir a la pestaña 'GPS' para ver cómo te ven los pasajeros.");
         }
     }
 
