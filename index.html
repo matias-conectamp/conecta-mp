@@ -180,7 +180,7 @@
             <div style="margin-top: 20px;">
                 <label style="color: #93c5fd; font-size: 14px;">🚗 Vehículos Disponibles en Ruta:</label>
                 <div id="lista-choferes-activos">
-                    <!-- Se llena automáticamente con filtro -->
+                    <!-- Se llena automáticamente -->
                 </div>
             </div>
         </div>
@@ -308,6 +308,7 @@
     let watchGpsId = null;
     let mapPasajero = null, mapChofer = null;
     let markerPasajero = null, markerChofer = null;
+    let choferesMarkersMap = {};
 
     window.onload = function() {
         const lock = document.getElementById('premium-lock');
@@ -324,10 +325,13 @@
 
         renderizarChoferesActivos();
         renderizarPasajerosEsperando();
+        
+        // Sincronización continua cada 4 segundos entre dispositivos
         setInterval(() => {
+            sincronizarEnLaNube();
             renderizarChoferesActivos();
             renderizarPasajerosEsperando();
-        }, 5000);
+        }, 4000);
     };
 
     function ingresoGarantizado() {
@@ -351,7 +355,7 @@
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre: nombre, telefono: telefono, rol: rol })
+                body: JSON.stringify({ action: 'register', nombre: nombre, telefono: telefono, rol: rol })
             }).catch(err => console.log(err));
         }
 
@@ -362,14 +366,18 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
         
-        // SEPARACIÓN ESTRICTA DE PESTAÑAS
+        const btnPasajerosTab = document.getElementById('btn-tab-pasajeros');
         const btnChoferesTab = document.getElementById('btn-tab-choferes');
+
+        // BLOQUEO ESTRICTO DE PESTAÑAS SEGÚN ROL
         if (rol !== 'pasajeros') {
+            if (btnPasajerosTab) btnPasajerosTab.style.display = 'none'; // Chofer no ve la vista de pasajero
             if (btnChoferesTab) btnChoferesTab.style.display = 'block';
             switchTab('choferes');
             setTimeout(initMapChofer, 300);
         } else {
-            if (btnChoferesTab) btnChoferesTab.style.display = 'none'; // Ocultar choferes al pasajero
+            if (btnChoferesTab) btnChoferesTab.style.display = 'none'; // Pasajero no ve la vista de chofer
+            if (btnPasajerosTab) btnPasajerosTab.style.display = 'block';
             switchTab('pasajeros');
             setTimeout(initMapPasajero, 300);
         }
@@ -505,6 +513,7 @@
             delete choferes[nombre];
         }
         localStorage.setItem('conecta_mp_drivers_live', JSON.stringify(choferes));
+        sincronizarEnLaNube();
     }
 
     function obtenerEtiquetaRol(rol) {
@@ -519,7 +528,7 @@
         }
     }
 
-    /* RENDERIZADO PARA PASAJEROS EN MAPA REAL */
+    /* RENDERIZADO Y PINES EN MAPA PARA PASAJEROS */
     function renderizarChoferesActivos() {
         const contenedor = document.getElementById('lista-choferes-activos');
         const statusHeader = document.getElementById('live-driver-status');
@@ -537,10 +546,18 @@
             const d = choferes[key];
             if (ahora - d.lastUpdate > 1800000) {
                 delete choferes[key];
+                if (choferesMarkersMap[key] && mapPasajero) {
+                    mapPasajero.removeLayer(choferesMarkersMap[key]);
+                    delete choferesMarkersMap[key];
+                }
                 continue;
             }
 
             if (filtro !== 'todos' && d.rol !== filtro) {
+                if (choferesMarkersMap[key] && mapPasajero) {
+                    mapPasajero.removeLayer(choferesMarkersMap[key]);
+                    delete choferesMarkersMap[key];
+                }
                 continue;
             }
 
@@ -548,6 +565,20 @@
             const fonoLimpio = d.telefono ? d.telefono.replace(/[^0-9]/g, '') : '';
             const linkWsp = fonoLimpio ? `https://wa.me/${fonoLimpio}` : '#';
             const etiqueta = obtenerEtiquetaRol(d.rol);
+
+            // Crear o actualizar marcadores en el mapa del pasajero
+            if (d.lat && d.lon && mapPasajero) {
+                const latNum = parseFloat(d.lat);
+                const lonNum = parseFloat(d.lon);
+                if (!isNaN(latNum) && !isNaN(lonNum)) {
+                    if (choferesMarkersMap[key]) {
+                        choferesMarkersMap[key].setLatLng([latNum, lonNum]);
+                    } else {
+                        choferesMarkersMap[key] = L.marker([latNum, lonNum]).addTo(mapPasajero)
+                            .bindPopup(`<b>${etiqueta}: ${d.nombre}</b><br>💺 ${d.asientos} asientos libres`);
+                    }
+                }
+            }
 
             html += `
                 <div class="driver-card-active">
@@ -600,6 +631,7 @@
                 };
                 localStorage.setItem('conecta_mp_passengers_waiting', JSON.stringify(pasajeros));
 
+                sincronizarEnLaNube();
                 renderizarPasajerosEsperando();
                 alert("📍 Tu ubicación se fijó en el mapa y se envió a los choferes en vivo.");
             });
@@ -645,6 +677,25 @@
         } else {
             contenedor.innerHTML = html;
         }
+    }
+
+    /* SINCRONIZACIÓN EN LA NUBE ENTRE DISPOSITIVOS (GOOGLE SHEETS APPS SCRIPT) */
+    function sincronizarEnLaNube() {
+        if (!URL_GOOGLE_SHEETS || !URL_GOOGLE_SHEETS.startsWith("http")) return;
+
+        const drivers = JSON.parse(localStorage.getItem('conecta_mp_drivers_live') || '{}');
+        const passengers = JSON.parse(localStorage.getItem('conecta_mp_passengers_waiting') || '{}');
+
+        fetch(URL_GOOGLE_SHEETS, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'sync_location',
+                drivers: drivers,
+                passengers: passengers
+            })
+        }).catch(err => console.log("Error sincronización:", err));
     }
 
     function publicarReporte() {
