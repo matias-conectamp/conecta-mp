@@ -168,7 +168,7 @@
 
         <!-- PANEL PASAJEROS -->
         <div id="panel-pasajeros" class="panel active">
-            <!-- BARRA DE PROXIMIDAD DENTRO DEL PERFIL PASAJERO -->
+            <!-- BARRA DE PROXIMIDAD EN PANEL DE PASAJERO -->
             <div id="proximity-bar" class="proximity-bar">
                 <span id="proximity-icon" style="font-size:16px;">📡</span> 
                 <span id="proximity-text" style="font-weight:700; font-size:13px;">Buscando transportes cercanos...</span>
@@ -319,7 +319,7 @@
     let globalDriversLive = {};
     let globalPassengersLive = {};
     let miLatitud = null, miLongitud = null;
-    let ultimaAlarmaEjecutada = 0; // Control de frecuencia de la alarma
+    let ultimaAlarmaEjecutada = 0;
 
     window.onload = function() {
         const user = localStorage.getItem('conecta_mp_user');
@@ -360,6 +360,7 @@
         const btnPasajerosTab = document.getElementById('btn-tab-pasajeros');
         const btnChoferesTab = document.getElementById('btn-tab-choferes');
 
+        // BLOQUEO ABSOLUTO DE PESTAÑAS SEGÚN ROL
         if (rol !== 'pasajeros') {
             if (btnPasajerosTab) btnPasajerosTab.style.display = 'none';
             if (btnChoferesTab) btnChoferesTab.style.display = 'block';
@@ -578,22 +579,19 @@
     /* ALARMA SONORA Y VIBRACIÓN DE PROXIMIDAD */
     function emitirAlarmaProximidad() {
         const ahora = Date.now();
-        // Evita sonar más de una vez cada 20 segundos
         if (ahora - ultimaAlarmaEjecutada < 20000) return;
         ultimaAlarmaEjecutada = ahora;
 
         try {
-            // 1. Vibrar el dispositivo (3 pulsos)
             if ("vibrate" in navigator) {
                 navigator.vibrate([400, 200, 400, 200, 400]);
             }
-            // 2. Tono de aviso sonoro (Beep sintetizado)
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tono agudo 880Hz
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
             
             osc.connect(gain);
@@ -602,7 +600,7 @@
             osc.start();
             osc.stop(audioCtx.currentTime + 1.2);
         } catch(e) {
-            console.log("Audio o vibración restringida por el navegador:", e);
+            console.log("Audio/Vibración en espera de permisos:", e);
         }
     }
 
@@ -639,14 +637,11 @@
             }
         }
 
-        // ALERTA ACTIVADA A 1 KILÓMETRO DE DISTANCIA
         if (vehiculoCercano && menorDistancia <= 1.0) {
             const etiqueta = obtenerEtiquetaRol(vehiculoCercano.rol);
             bar.className = 'proximity-bar alert-arriving';
             icon.innerText = '🚨';
             text.innerText = `¡${etiqueta} (${vehiculoCercano.nombre}) A MENOS DE 1 KM! (${menorDistancia.toFixed(1)} km)`;
-            
-            // Tocar alarma sonora y vibrar el celular
             emitirAlarmaProximidad();
         } else if (vehiculoCercano && menorDistancia <= 3.0) {
             const etiqueta = obtenerEtiquetaRol(vehiculoCercano.rol);
