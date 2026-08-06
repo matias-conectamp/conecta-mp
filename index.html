@@ -94,7 +94,7 @@
         /* Botones */
         .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 15px; margin-bottom: 12px; }
         .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); }
-        .btn-ingreso { background: linear-gradient(135deg, #2563eb, #1d4ed8); font-size: 17px; padding: 18px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+        .btn-ingreso { background: linear-gradient(135deg, var(--2563eb, #2563eb), #1d4ed8); font-size: 17px; padding: 18px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
         .btn-green { background: var(--success); }
         .btn-red { background: var(--danger); }
         .btn-mp { background: #009ee3; font-size: 14px; padding: 10px; }
@@ -114,7 +114,6 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; }
         th { background: #1e293b; color: white; position: sticky; top: 0; }
         .tag-route { display: inline-block; padding: 2px 6px; background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-radius: 4px; font-size: 11px; }
-        .btn-whatsapp-pass { background-color: #25d366; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; }
     </style>
 </head>
 <body>
@@ -189,6 +188,9 @@
             
             <textarea id="msg-pasajero" rows="2" placeholder="Escribe una nota para el chofer (ej: Esperando en cruce San Manuel)..."></textarea>
             
+            <!-- BOTÓN DE WHATSAPP EXCLUSIVO PARA PASAJEROS EN LA SECCIÓN GPS -->
+            <button class="btn" style="background-color: #25d366; color: white;" onclick="compartirUbicacionWhatsAppPasajero()">📱 Enviar Ubicación por WhatsApp</button>
+
             <div id="map-pasajero" class="map-real"></div>
             <div style="font-size:12px; color:#60a5fa; text-align:center; margin-bottom:10px;" id="live-driver-status">Conectando con la red en vivo de Conecta MP...</div>
 
@@ -245,88 +247,34 @@
             </div>
         </div>
 
-        <!-- PANEL HORARIOS CON BUSES ORELLANA COMPLETOS Y BOTÓN WHATSAPP -->
+        <!-- PANEL HORARIOS (SIN COLECTIVOS NI ESCOLARES, SOLO BUSES ORELLANA Y LIEBRES MUNI) -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
                 <button class="sub-btn active" id="sbtn-stgo" onclick="switchSubTab('stgo')">Buses Orellana</button>
                 <button class="sub-btn" id="sbtn-muni" onclick="switchSubTab('muni')">Liebres Muni</button>
-                <button class="sub-btn" id="sbtn-colectivos" onclick="switchSubTab('colectivos')">Colectivos</button>
-                <button class="sub-btn" id="sbtn-escolar" onclick="switchSubTab('escolar')">Escolares</button>
             </div>
 
             <div id="tab-stgo" class="table-container active">
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px; text-align:center;">📱 Haz clic en WhatsApp para compartir la hora y tu ubicación:</p>
                 <table>
                     <thead><tr><th>Salida Bollenar / Campesino ➔ Stgo</th><th>Desde Santiago ➔ Bollenar</th></tr></thead>
                     <tbody>
-                        <tr>
-                            <td>05:10 (P.10) <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '05:10 (Paradero 10)')">💬 Wsp</button></td>
-                            <td>07:45 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '07:45')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>05:20 (El Campesino) <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '05:20 (El Campesino)')">💬 Wsp</button></td>
-                            <td>09:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '09:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>05:20 <span class="tag-route">vía Ibacache</span> <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '05:20 (vía Ibacache)')">💬 Wsp</button></td>
-                            <td>10:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '10:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>05:45 (El Campesino) <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '05:45 (El Campesino)')">💬 Wsp</button></td>
-                            <td>11:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '11:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>06:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '06:30')">💬 Wsp</button></td>
-                            <td>12:00 <span class="tag-route">vía Ibacache</span> <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '12:00 (vía Ibacache)')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>07:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '07:00')">💬 Wsp</button></td>
-                            <td>13:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '13:30')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>07:15 <span class="tag-route">vía Ibacache</span> <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '07:15 (vía Ibacache)')">💬 Wsp</button></td>
-                            <td>14:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '14:30')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>08:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '08:00')">💬 Wsp</button></td>
-                            <td>15:15 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '15:15')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>09:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '09:00')">💬 Wsp</button></td>
-                            <td>16:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '16:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>10:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '10:00')">💬 Wsp</button></td>
-                            <td>17:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '17:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>11:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '11:00')">💬 Wsp</button></td>
-                            <td>17:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '17:30')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>12:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '12:00')">💬 Wsp</button></td>
-                            <td>18:15 <span class="tag-route">vía Ibacache</span> <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '18:15 (vía Ibacache)')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>13:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '13:30')">💬 Wsp</button></td>
-                            <td>18:35 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '18:35')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>14:30 <span class="tag-route">vía Ibacache</span> <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '14:30 (vía Ibacache)')">💬 Wsp</button></td>
-                            <td>19:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '19:00')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>15:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '15:30')">💬 Wsp</button></td>
-                            <td>19:30 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '19:30')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>16:40 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '16:40')">💬 Wsp</button></td>
-                            <td>20:15 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Santiago ➔ Bollenar', '20:15')">💬 Wsp</button></td>
-                        </tr>
-                        <tr>
-                            <td>18:00 <button class="btn-whatsapp-pass" onclick="compartirHorarioWsp('Bollenar ➔ Santiago', '18:00')">💬 Wsp</button></td>
-                            <td>-</td>
-                        </tr>
+                        <tr><td>05:10 (P.10)</td><td>07:45</td></tr>
+                        <tr><td>05:20 (El Campesino)</td><td>09:00</td></tr>
+                        <tr><td>05:20 <span class="tag-route">vía Ibacache</span></td><td>10:00</td></tr>
+                        <tr><td>05:45 (El Campesino)</td><td>11:00</td></tr>
+                        <tr><td>06:30</td><td>12:00 <span class="tag-route">vía Ibacache</span></td></tr>
+                        <tr><td>07:00</td><td>13:30</td></tr>
+                        <tr><td>07:15 <span class="tag-route">vía Ibacache</span></td><td>14:30</td></tr>
+                        <tr><td>08:00</td><td>15:15</td></tr>
+                        <tr><td>09:00</td><td>16:00</td></tr>
+                        <tr><td>10:00</td><td>17:00</td></tr>
+                        <tr><td>11:00</td><td>17:30</td></tr>
+                        <tr><td>12:00</td><td>18:15 <span class="tag-route">vía Ibacache</span></td></tr>
+                        <tr><td>13:30</td><td>18:35</td></tr>
+                        <tr><td>14:30 <span class="tag-route">vía Ibacache</span></td><td>19:00</td></tr>
+                        <tr><td>15:30</td><td>19:30</td></tr>
+                        <tr><td>16:40</td><td>20:15</td></tr>
+                        <tr><td>18:00</td><td>-</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -340,27 +288,6 @@
                         <tr><td>12:30 hrs <span class="tag-route">Mediodía</span></td><td>Los Panguiles ↔ Melipilla</td></tr>
                         <tr><td>15:30 hrs <span class="tag-route">Tarde</span></td><td>María Pinto ↔ Bollenar</td></tr>
                         <tr><td>18:00 hrs <span class="tag-route">Tarde</span></td><td>Retorno General Vecinos</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="tab-colectivos" class="table-container">
-                <table>
-                    <thead><tr><th>Línea</th><th>Frecuencia / Recorrido</th></tr></thead>
-                    <tbody>
-                        <tr><td>Línea 1</td><td>Cada 15 min (Lolenco - MP Centro)</td></tr>
-                        <tr><td>Línea 2</td><td>Cada 20 min (Los Rulos - Melipilla)</td></tr>
-                        <tr><td>Línea 3</td><td>Rotativo (Los Panguiles - Curacaví)</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="tab-escolar" class="table-container">
-                <table>
-                    <thead><tr><th>Servicio</th><th>Horarios / Tramo</th></tr></thead>
-                    <tbody>
-                        <tr><td>Furgones Escolares</td><td>07:00 a 08:00 / 13:00 a 14:00 / 17:00 hrs</td></tr>
-                        <tr><td>Buses Escolares Muni</td><td>Rutas Colegios Comunitarios María Pinto</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -679,22 +606,22 @@
         }
     }
 
-    // FUNCIÓN EXCLUSIVA PASAJERO: COMPARTIR HORARIO + GPS POR WHATSAPP
-    function compartirHorarioWsp(trayecto, hora) {
+    // FUNCIÓN EXCLUSIVA PARA EL BOTÓN WHATSAPP DEL PASAJERO
+    function compartirUbicacionWhatsAppPasajero() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 const linkUbs = `https://maps.google.com/?q=${lat},${lon}`;
                 
-                const texto = `¡Hola! Voy viajando en Conecta MP. Consulté el bus de *${trayecto}* a las *${hora}*. Mi ubicación actual es: ${linkUbs}`;
+                const texto = `¡Hola! Voy viajando en Conecta MP y comparto mi ubicación actual: ${linkUbs}`;
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
             }, function(error) {
-                const texto = `¡Hola! Consulté el bus de *${trayecto}* a las *${hora}* en Conecta MP.`;
+                const texto = `¡Hola! Estoy usando Conecta MP en María Pinto.`;
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
             });
         } else {
-            const texto = `¡Hola! Consulté el bus de *${trayecto}* a las *${hora}* en Conecta MP.`;
+            const texto = `¡Hola! Estoy usando Conecta MP en María Pinto.`;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
         }
     }
