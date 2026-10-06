@@ -8,12 +8,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --bg-main: #0b0f19;       
-            --bg-card: #1e293b;       
+            --bg-main: #0b0f19;        
+            --bg-card: #1e293b;        
             --primary-light: #f8fafc; 
-            --blue-accent: #2563eb;   
+            --blue-accent: #2563eb;    
             --blue-glow: #3b82f6;     
-            --success: #0f766e;       
+            --success: #0f766e;        
             --danger: #ef4444;
             --warning: #f59e0b;
             --text-muted: #94a3b8;    
@@ -94,7 +94,7 @@
         /* Botones */
         .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; text-decoration: none; font-size: 15px; margin-bottom: 12px; }
         .btn-blue { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); }
-        .btn-ingreso { background: linear-gradient(135deg, var(--2563eb, #2563eb), #1d4ed8); font-size: 17px; padding: 18px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+        .btn-ingreso { background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); font-size: 17px; padding: 18px; margin-top: 10px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
         .btn-green { background: var(--success); }
         .btn-red { background: var(--danger); }
         .btn-mp { background: #009ee3; font-size: 14px; padding: 10px; }
@@ -146,7 +146,6 @@
             <option value="liebre_muni">🚐 Liebre Gratuita Municipal</option>
             <option value="furgon_escolar">🚐 Furgón Escolar</option>
             <option value="bus_escolar">🚌 Bus Escolar</option>
-            <option value="particulares">🚗 Vehículo Particular (Auto Compartido)</option>
         </select>
 
         <button class="btn btn-ingreso" onclick="ingresoGarantizado()">ENTRAR A LA APP</button>
@@ -160,7 +159,7 @@
     <!-- APP PRINCIPAL -->
     <div id="main-app-content">
         <div class="tabs">
-            <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️ GPS</button>
+            <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰️️ GPS</button>
             <button class="tab-btn" id="btn-tab-reportes" onclick="switchTab('reportes')">⚠️ Reportes</button>
             <button class="tab-btn" id="btn-tab-choferes" onclick="switchTab('choferes')">🚗 Choferes</button>
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios</button>
@@ -183,7 +182,6 @@
                 <option value="liebre_muni">🚐 Liebre Gratuita Municipal</option>
                 <option value="furgon_escolar">🚐 Furgones Escolares</option>
                 <option value="bus_escolar">🚌 Buses Escolares</option>
-                <option value="particulares">🚗 Vehículos Particulares Compartidos</option>
             </select>
             
             <textarea id="msg-pasajero" rows="2" placeholder="Escribe una nota para el chofer (ej: Esperando en cruce San Manuel)..."></textarea>
@@ -247,7 +245,7 @@
             </div>
         </div>
 
-        <!-- PANEL HORARIOS (SIN COLECTIVOS NI ESCOLARES, SOLO BUSES ORELLANA Y LIEBRES MUNI) -->
+        <!-- PANEL HORARIOS -->
         <div id="panel-horarios" class="panel">
             <div class="sub-tabs">
                 <button class="sub-btn active" id="sbtn-stgo" onclick="switchSubTab('stgo')">Buses Orellana</button>
@@ -544,7 +542,6 @@
             case 'liebre_muni': return '🚐 Liebre Muni (Gratis)';
             case 'furgon_escolar': return '🚐 Furgón Escolar';
             case 'bus_escolar': return '🚌 Bus Escolar';
-            case 'particulares': return '🚗 Particular';
             default: return '🚘 Vehículo';
         }
     }
@@ -757,7 +754,7 @@
                         <span class="driver-card-title">${etiqueta}: ${d.nombre}</span>
                         <span class="badge-seats">💺 ${d.asientos} cupos</span>
                     </div>
-                    <p style="font-size:11px; color:var(--text-muted);">Ubicación: ${d.lat ? `Lat ${parseFloat(d.lat).toFixed(4)}, Lon ${parseFloat(d.lon).toFixed(4)}` : 'En trayecto'}</p>
+                    <p style="font-size:11px; color:var(--text-muted);">Ubicación: ${d.lat ? `Lat ${parseFloat(d.lat).toFixed(4)}, Lon${parseFloat(d.lon).toFixed(4)}` : 'En trayecto'}</p>
                     ${fonoLimpio ? `<a href="${linkWsp}" target="_blank" class="btn btn-green" style="padding:6px 10px; font-size:12px; margin-top:8px;">💬 Contactar por WhatsApp</a>` : ''}
                 </div>
             `;
