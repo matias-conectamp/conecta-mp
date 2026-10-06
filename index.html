@@ -203,7 +203,7 @@
                 <select id="report-type">
                     <option value="warning">⚠️ Retraso / Taco</option>
                     <option value="danger">🚨 Accidente / Panne</option>
-                    <option value="info">ℹ️️ Estado Normal</option>
+                    <option value="info">ℹ Estado Normal</option>
                 </select>
                 <button class="btn btn-blue" style="padding:10px; font-size:14px;" onclick="publicarReporte()">Publicar Reporte</button>
             </div>
@@ -354,6 +354,7 @@
     let globalPassengersLive = {};
     let miLatitud = null, miLongitud = null;
     let ultimaAlarmaEjecutada = 0;
+    let pasajerosAnterioresCount = -1;
 
     window.onload = function() {
         const user = localStorage.getItem('conecta_mp_user');
@@ -654,6 +655,39 @@
         }
     }
 
+    // FUNCIÓN DE ALERTA DE VOZ PARA EL CHOFER
+    function reproducirAlertaVoz(mensajeTexto) {
+        try {
+            if ("vibrate" in navigator) {
+                navigator.vibrate([300, 150, 300]);
+            }
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(750, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        } catch(e) {
+            console.log("Audio en espera de interacción:", e);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(mensajeTexto);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
     function escucharRedEnTiempoReal() {
         db.ref('drivers').on('value', snapshot => {
             globalDriversLive = snapshot.val() || {};
@@ -663,6 +697,18 @@
 
         db.ref('passengers').on('value', snapshot => {
             globalPassengersLive = snapshot.val() || {};
+            
+            const keysPasajeros = Object.keys(globalPassengersLive);
+            const cantidadActual = keysPasajeros.length;
+
+            const rolActual = localStorage.getItem('conecta_mp_role');
+            if (rolActual && rolActual !== 'pasajeros') {
+                if (pasajerosAnterioresCount !== -1 && cantidadActual > pasajerosAnterioresCount) {
+                    reproducirAlertaVoz("Atención chofer: Un nuevo pasajero se ha conectado en tu ruta.");
+                }
+            }
+            pasajerosAnterioresCount = cantidadActual;
+
             renderizarPasajerosEsperando();
         });
     }
