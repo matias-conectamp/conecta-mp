@@ -23,9 +23,9 @@
         
         .container { width: 100%; max-width: 480px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Encabezado */
+        /* Encabezado con Logo */
         .brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 24px; gap: 8px; }
-        .brand-logo { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: linear-gradient(135deg, var(--blue-accent), #1d4ed8); border-radius: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); font-size: 24px; color: white; }
+        .brand-logo-img { width: 64px; height: 64px; border-radius: 16px; object-fit: cover; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); border: 2px solid rgba(255, 255, 255, 0.1); }
         .brand-title { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         /* Pantallas */
@@ -119,7 +119,7 @@
 
 <div class="container">
     <div class="brand-header">
-        <div class="brand-logo">📡</div>
+        <img src="icon.png" alt="Conecta MP Logo" class="brand-logo-img">
         <h1 class="brand-title">Conecta MP</h1>
     </div>
 
@@ -155,7 +155,7 @@
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-pasajeros" onclick="switchTab('pasajeros')">🛰 GPS</button>
             <button class="tab-btn" id="btn-tab-reportes" onclick="switchTab('reportes')">⚠️ Reportes</button>
-            <button class="tab-btn" id="btn-tab-choferes" onclick="switchTab('choferes')" style="display:block;">🚗 Choferes</button>
+            <button class="tab-btn" id="btn-tab-choferes" onclick="switchTab('choferes')" style="display:none;">🚗 Choferes</button>
             <button class="tab-btn" id="btn-tab-horarios" onclick="switchTab('horarios')">🕒 Horarios</button>
         </div>
 
@@ -179,12 +179,12 @@
             </select>
             
             <label>💬 Destino o Nota en Ruta:</label>
-            <textarea id="msg-pasajero" rows="2" placeholder="Escribe tu destino (ej: Voy a Las Mercedes, La Palma o Ibacache)..." oninput="evaluarSugerenciaPeriferica()"></textarea>
+            <textarea id="msg-pasajero" rows="2" placeholder="Ej: Voy a Las Mercedes, La Palma, Malhue, etc..." oninput="evaluarSugerenciaPeriferica()"></textarea>
             
-            <!-- CAJA DE SUGERENCIA DE PERIFERIA (Visible siempre para pruebas) -->
+            <!-- CAJA DE SUGERENCIA DE PERIFERIA AMPLIADA -->
             <div id="sugerencia-periferica-box" style="background: rgba(37, 99, 235, 0.15); border: 2px solid var(--blue-glow); border-radius: 12px; padding: 12px; margin-bottom: 14px; display: none;">
                 <div style="font-weight: 700; font-size: 13px; color: #93c5fd; margin-bottom: 4px;" id="sugerencia-titulo">🚍 Conexión Sugerida a la Periferia</div>
-                <div style="font-size: 12px; color: #e2e8f0; line-height: 1.4;" id="sugerencia-contenido">Escribe "Las Mercedes" o "La Palma" arriba para ver opciones formales...</div>
+                <div style="font-size: 12px; color: #e2e8f0; line-height: 1.4;" id="sugerencia-contenido">Escribe tu destino periférico para ver combinaciones formales...</div>
             </div>
             
             <!-- BOTÓN DE WHATSAPP EXCLUSIVO PARA PASAJEROS EN LA SECCIÓN GPS -->
@@ -217,7 +217,7 @@
             <div id="muro-reportes"></div>
         </div>
 
-        <!-- PANEL CHOFERES -->
+        <!-- PANEL CHOFERES (Solo visible para perfiles de transporte) -->
         <div id="panel-choferes" class="panel">
             <div id="map-chofer" class="map-real"></div>
             <div id="chofer-gps-status" style="text-align:center; font-size:12px; font-weight:bold; color:#2dd4bf; margin-bottom: 12px;">Presiona 'Transmitir Ubicación' para iniciar GPS</div>
@@ -357,6 +357,7 @@
     let mapPasajero = null, mapChofer = null;
     let markerPasajero = null, markerChofer = null;
     let choferesMarkersMap = {};
+    let pasajerosMarkersMap = {};
     let globalDriversLive = {};
     let globalPassengersLive = {};
     let miLatitud = null, miLongitud = null;
@@ -398,10 +399,19 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'block';
         
+        const btnChoferesTab = document.getElementById('btn-tab-choferes');
+        const btnPasajerosTab = document.getElementById('btn-tab-pasajeros');
+
         if (rol !== 'pasajeros') {
+            // Entró como chofer / transporte
+            if (btnChoferesTab) btnChoferesTab.style.display = 'block';
+            if (btnPasajerosTab) btnPasajerosTab.style.display = 'none';
             switchTab('choferes');
             setTimeout(initMapChofer, 300);
         } else {
+            // Entró como pasajero
+            if (btnChoferesTab) btnChoferesTab.style.display = 'none';
+            if (btnPasajerosTab) btnPasajerosTab.style.display = 'block';
             switchTab('pasajeros');
             setTimeout(initMapPasajero, 300);
         }
@@ -428,6 +438,14 @@
         if (mapChofer) { mapChofer.invalidateSize(); return; }
         mapChofer = L.map('map-chofer').setView([-33.518, -71.119], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapChofer);
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(p => {
+                miLatitud = p.coords.latitude;
+                miLongitud = p.coords.longitude;
+                mapChofer.setView([miLatitud, miLongitud], 14);
+            });
+        }
     }
 
     function cerrarSesion() {
@@ -656,31 +674,33 @@
         }
     }
 
-    function reproducirAlertaVoz(mensajeTexto) {
+    // COMANDO DE VOZ DETALLADO PARA EL CHOFER (Nombre, Ubicación y Nota/Destino)
+    function reproducirAlertaVozChofer(nombrePasajero, notaDestino, lat, lon) {
         try {
             if ("vibrate" in navigator) {
-                navigator.vibrate([300, 150, 300]);
+                navigator.vibrate([300, 150, 300, 150, 300]);
             }
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(750, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
             
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + 0.6);
         } catch(e) {
             console.log("Audio en espera de interacción:", e);
         }
 
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(mensajeTexto);
+            const textoVoz = `Atención chofer: El pasajero ${nombrePasajero} está esperando en ruta. Su nota o destino es: ${notaDestino}. Ubicación registrada con coordenadas cercanas.`;
+            const utterance = new SpeechSynthesisUtterance(textoVoz);
             utterance.lang = 'es-ES';
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
@@ -693,7 +713,6 @@
             globalDriversLive = snapshot.val() || {};
             renderizarChoferesActivos();
             calcularAvisoProximidad();
-            evaluarSugerenciaPeriferica();
         });
 
         db.ref('passengers').on('value', snapshot => {
@@ -705,12 +724,18 @@
             const rolActual = localStorage.getItem('conecta_mp_role');
             if (rolActual && rolActual !== 'pasajeros') {
                 if (pasajerosAnterioresCount !== -1 && cantidadActual > pasajerosAnterioresCount) {
-                    reproducirAlertaVoz("Atención chofer: Un nuevo pasajero se ha conectado en tu ruta.");
+                    // Buscar el pasajero recién conectado para leer sus datos exactos
+                    for (let k in globalPassengersLive) {
+                        let p = globalPassengersLive[k];
+                        reproducirAlertaVozChofer(p.nombre, p.nota, p.lat, p.lon);
+                        break;
+                    }
                 }
             }
             pasajerosAnterioresCount = cantidadActual;
 
             renderizarPasajerosEsperando();
+            renderizarPasajerosEnMapaChofer();
         });
     }
 
@@ -882,7 +907,28 @@
         }
     }
 
-    // FUNCIÓN DE EVALUACIÓN PERIFÉRICA CORREGIDA Y VISIBLE
+    function renderizarPasajerosEnMapaChofer() {
+        const ahora = Date.now();
+        for (let key in globalPassengersLive) {
+            const p = globalPassengersLive[key];
+            if (ahora - p.lastUpdate > 1800000) continue;
+
+            if (p.lat && p.lon && mapChofer) {
+                const latNum = parseFloat(p.lat);
+                const lonNum = parseFloat(p.lon);
+                if (!isNaN(latNum) && !isNaN(lonNum)) {
+                    if (pasajerosMarkersMap[key]) {
+                        pasajerosMarkersMap[key].setLatLng([latNum, lonNum]);
+                    } else {
+                        pasajerosMarkersMap[key] = L.marker([latNum, lonNum]).addTo(mapChofer)
+                            .bindPopup(`<b>Pasajero: ${p.nombre}</b><br>💬 "${p.nota}"`);
+                    }
+                }
+            }
+        }
+    }
+
+    // MÓDULO AMPLIADO CON TODOS LOS SECTORES PERIFÉRICOS
     function evaluarSugerenciaPeriferica() {
         const txtArea = document.getElementById('msg-pasajero');
         const cajaSugerencia = document.getElementById('sugerencia-periferica-box');
@@ -892,22 +938,23 @@
         if (!txtArea || !cajaSugerencia) return;
 
         const texto = txtArea.value.toLowerCase();
-        const buscaMercedes = texto.includes("mercedes") || texto.includes("chorombo") || texto.includes("ovalle");
-        const buscaPalma = texto.includes("palma") || texto.includes("ibacache");
+        
+        const buscaMercedes = texto.includes("mercedes") || texto.includes("chorombo") || texto.includes("ovalle") || texto.includes("malahue") || texto.includes("parron") || texto.includes("rojas") || texto.includes("ranchillo");
+        const buscaPalma = texto.includes("palma") || texto.includes("ibacache") || texto.includes("rosario");
 
         if (buscaMercedes || buscaPalma || texto.length > 0) {
             cajaSugerencia.style.display = 'block';
             let infoBus = "";
 
             if (buscaMercedes) {
-                tituloSugerencia.innerHTML = "🚍 Opción Oficial: Las Mercedes / Lo Ovalle";
-                infoBus = "<b>Bus Municipal (Bus 1 - Lo Ovalle):</b> Revisa la pestaña <b>Horarios</b> para ver las salidas fijas de acercamiento (ej. 08:00, 11:30, 16:50). Puedes tomar un colectivo hasta el cruce y conectar con el bus formal.";
+                tituloSugerencia.innerHTML = "🚍 Conexión Oficial: Zona Lo Ovalle / Las Mercedes / Chorombo";
+                infoBus = "<b>Bus Municipal (Bus 1 - Lo Ovalle):</b> Cubre Ranchillo, Lo Ovalle, Isla de Rojas, Cancha de Piedra, Parrón, Malahue, Las Mercedes y Cruce Chorombo Alto. Revisa la pestaña <b>Horarios</b> para ver salidas fijas (ej. 08:00, 11:30, 16:50).";
             } else if (buscaPalma) {
-                tituloSugerencia.innerHTML = "🚍 Opción Oficial: La Palma / Ibacache";
-                infoBus = "<b>Bus Municipal (Bus 2 - La Palma):</b> Revisa la pestaña <b>Horarios</b> para los recorridos vía Ibacache y La Palma. Cero costo de transporte informal.";
+                tituloSugerencia.innerHTML = "🚍 Conexión Oficial: Zona La Palma / Ibacache / El Rosario";
+                infoBus = "<b>Bus Municipal (Bus 2 - La Palma):</b> Cubre Baracaldo, Chorombo, Ibacache, La Palma y El Rosario. Cero costo de transporte informal.";
             } else {
                 tituloSugerencia.innerHTML = "💡 Sugerencia de Conectividad MP";
-                infoBus = "Escribe <b>'Las Mercedes'</b> o <b>'La Palma'</b> en el cuadro de arriba para ver las conexiones directas con los buses municipales y rurales formales.";
+                infoBus = "Escribe sectores como <b>Las Mercedes, La Palma, Malahue, Ibacache, El Rosario, Chorombo, Parrón</b> o <b>Isla de Rojas</b> para ver rutas de buses municipales y rurales.";
             }
 
             let colectivosCercanos = 0;
@@ -919,14 +966,14 @@
             }
 
             let infoColectivo = colectivosCercanos > 0 
-                ? `<br><br><span style="color:#34d399;">🚖 Hay ${colectivosCercanos} colectivo(s) activo(s) en ruta para acercarte al cruce.</span>` 
-                : `<br><br><span style="color:#f87171;">⚠️ Sin colectivos transmitiendo en este momento; guíate por los horarios de buses formales.</span>`;
+                ? `<br><br><span style="color:#34d399;">🚖 Hay ${colectivosCercanos} colectivo(s) activo(s) en ruta para acercarte al cruce de combinación.</span>` 
+                : `<br><br><span style="color:#f87171;">⚠️ Sin colectivos transmitiendo en este momento; guíate por los horarios formales.</span>`;
 
             contenidoSugerencia.innerHTML = infoBus + (buscaMercedes || buscaPalma ? infoColectivo : "");
         } else {
             cajaSugerencia.style.display = 'block';
             tituloSugerencia.innerHTML = "💡 Sugerencia de Conectividad MP";
-            contenidoSugerencia.innerHTML = "Escribe <b>'Las Mercedes'</b> o <b>'La Palma'</b> arriba para consultar las combinaciones de buses municipales.";
+            contenidoSugerencia.innerHTML = "Escribe tu sector periférico para consultar combinaciones con buses municipales.";
         }
     }
 
